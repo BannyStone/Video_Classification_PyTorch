@@ -8,7 +8,7 @@ import torch.utils.model_zoo as model_zoo
 
 
 __all__ = ['ResNet3D', 'resnet18_2d', 'resnet18_3d_plain', \
-           'resnet18_3d_residual', 'resnet34_3d']
+           'resnet18_3d_residual', 'resnet34_3d', 'resnet50_3d']
 
 
 model_urls = {
@@ -170,10 +170,11 @@ class Bottleneck3D_100(nn.Module):
     def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
         super(Bottleneck3D_100, self).__init__()
         self.conv1 = nn.Conv3d(inplanes, planes, kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
                                padding=(1, 0, 0), bias=False)
         self.bn1 = nn.BatchNorm3d(planes)
         self.conv2 = nn.Conv3d(planes, planes, kernel_size=(1, 3, 3), 
-                               stride=(t_stride, stride, stride), padding=(0, 1, 1), bias=False)
+                               stride=(1, stride, stride), padding=(0, 1, 1), bias=False)
         self.bn2 = nn.BatchNorm3d(planes)
         self.conv3 = nn.Conv3d(planes, planes * self.expansion, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm3d(planes * self.expansion)
@@ -208,10 +209,11 @@ class Bottleneck3D_000(nn.Module):
 
     def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
         super(Bottleneck3D_000, self).__init__()
-        self.conv1 = nn.Conv3d(inplanes, planes, kernel_size=1, bias=False)
+        self.conv1 = nn.Conv3d(inplanes, planes, kernel_size=1, 
+                               stride=[t_stride, 1, 1], bias=False)
         self.bn1 = nn.BatchNorm3d(planes)
         self.conv2 = nn.Conv3d(planes, planes, kernel_size=(1, 3, 3), 
-                               stride=[t_stride, stride, stride], padding=(0, 1, 1), bias=False)
+                               stride=[1, stride, stride], padding=(0, 1, 1), bias=False)
         self.bn2 = nn.BatchNorm3d(planes)
         self.conv3 = nn.Conv3d(planes, planes * self.expansion, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm3d(planes * self.expansion)
@@ -395,7 +397,7 @@ def resnet50_3d(pretrained=False, feat=False, **kwargs):
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_100, Bottleneck3D_100], 
+    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_000], 
                      [3, 4, 6, 3], feat=feat, **kwargs)
     if pretrained:
         state_dict = model_zoo.load_url(model_urls['resnet50'])

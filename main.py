@@ -87,7 +87,7 @@ def main():
         phase="Train")
     train_loader = torch.utils.data.DataLoader(
         train_dataset, 
-        batch_size=args.batch_size, shuffle=True,
+        batch_size=args.batch_size, shuffle=True, drop_last=True,
         num_workers=args.workers, pin_memory=True)
 
     ## val data
@@ -107,11 +107,11 @@ def main():
         phase="Val")
     val_loader = torch.utils.data.DataLoader(
         val_dataset,
-        batch_size=args.batch_size, shuffle=False,
+        batch_size=args.batch_size, shuffle=False, drop_last=True, 
         num_workers=args.workers, pin_memory=True)
 
     # if args.evaluate:
-    #     validate(val_loader, model, criterion, args.print_freq, 0)
+    validate(val_loader, model, criterion, args.print_freq, 0)
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch, args.lr_steps)

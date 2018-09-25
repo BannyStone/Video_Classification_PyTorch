@@ -40,7 +40,7 @@ if args.dataset == 'ucf101':
     num_class = 101
 elif args.dataset == 'hmdb51':
     num_class = 51
-elif args.dataset == 'kinetics':
+elif args.dataset == 'kinetics400':
     num_class = 400
 else:
     raise ValueError('Unknown dataset '+args.dataset)

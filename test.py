@@ -6,15 +6,15 @@ import torch.nn.parallel
 import torch.optim
 from sklearn.metrics import confusion_matrix
 
-from dataset import TSNDataSet
-from models import TSN
-from transforms import *
-from ops import ConsensusModule
+from lib.dataset import VideoDataSet
+from lib.models import VideoModule
+from lib.transforms import *
+from lib.utils.tools import *
 
 # options
 parser = argparse.ArgumentParser(
     description="Standard video-level testing")
-parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics'])
+parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics400', 'kinetics200'])
 parser.add_argument('modality', type=str, choices=['RGB', 'Flow', 'RGBDiff'])
 parser.add_argument('test_list', type=str)
 parser.add_argument('weights', type=str)
@@ -40,7 +40,7 @@ if args.dataset == 'ucf101':
     num_class = 101
 elif args.dataset == 'hmdb51':
     num_class = 51
-elif args.dataset == 'kinetics':
+elif args.dataset == 'kinetics400':
     num_class = 400
 else:
     raise ValueError('Unknown dataset '+args.dataset)
@@ -50,8 +50,17 @@ net = TSN(num_class, 1, args.modality,
           consensus_type=args.crop_fusion_type,
           dropout=args.dropout)
 
+net = VideoModule(num_class=num_class, 
+                        base_model_name=args.arch,
+                        t_length=args.t_length,
+                        t_stride=args.t_stride,
+                        dropout=args.dropout,
+                        pretrained=args.pretrained)
+
 checkpoint = torch.load(args.weights)
-print("model epoch {} best prec@1: {}".format(checkpoint['epoch'], checkpoint['best_prec1']))
+import pdb
+pdb.set_trace()
+print("model epoch {} best metric: {}".format(checkpoint['epoch'], checkpoint['best_metric']))
 
 base_dict = {'.'.join(k.split('.')[1:]): v for k,v in list(checkpoint['state_dict'].items())}
 net.load_state_dict(base_dict)
@@ -164,3 +173,5 @@ if args.save_scores is not None:
         reorder_label[idx] = video_labels[i]
 
     np.savez(args.save_scores, scores=reorder_output, labels=reorder_label)
+
+
