@@ -10,7 +10,7 @@ data/kinetics400/kinetics_val_list.txt \
 --t_stride 4 \
 --pretrained \
 --epochs 75 \
---batch-size 128 \
+--batch-size 64 \
 --lr 0.001 \
 --lr_steps 24 58 70 \
 --workers 32 \
