@@ -69,7 +69,7 @@ class InvertedResidual(nn.Module):
 
 class MobileNetV2_3D(nn.Module):
     def __init__(self, n_class=1000, input_size=224, width_mult=1., feat=False):
-        super(MobileNetV2, self).__init__()
+        super(MobileNetV2_3D, self).__init__()
         self.feat = feat
         block = InvertedResidual
         input_channel = 32
