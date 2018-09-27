@@ -1,6 +1,7 @@
 import os
 from torch import nn
 from .networks.mnet2 import mnet2
+from .networks.mnet2_3d import mnet2_3d
 from .networks.resnet import *
 from .networks.resnet_3d import *
 
@@ -34,7 +35,11 @@ class VideoModule(nn.Module):
         elif base_model_name == "mnet2":
             model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
                                       "../models/mobilenet_v2.pth.tar")
-            self.base_model = mnet2(pretrained=model_path, feat=True) # developping...attrs: self.feat_dim...
+            self.base_model = mnet2(pretrained=model_path, feat=True)
+        elif base_model_name == "mnet2_3d":
+            model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
+                                      "../models/mobilenet_v2.pth.tar")
+            self.base_model = mnet2_3d(pretrained=model_path, feat=True)
         else:
             raise ValueError('Unknown base model: {}'.format(base_model))
 

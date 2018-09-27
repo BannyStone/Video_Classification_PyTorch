@@ -6,11 +6,6 @@ import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
 
-
-__all__ = ['ResNet3D', 'resnet18_2d', 'resnet18_3d_plain', \
-           'resnet18_3d_residual', 'resnet34_3d', 'resnet50_3d']
-
-
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
     'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
@@ -397,7 +392,7 @@ def resnet50_3d(pretrained=False, feat=False, **kwargs):
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_000], 
+    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_100, Bottleneck3D_100], 
                      [3, 4, 6, 3], feat=feat, **kwargs)
     if pretrained:
         state_dict = model_zoo.load_url(model_urls['resnet50'])

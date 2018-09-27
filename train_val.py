@@ -18,11 +18,10 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq):
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
-      # import pdb
-      # pdb.set_trace()
       # measure data loading time
       data_time.update(time.time() - end)
 
+      input = input.cuda()
       target = target.cuda(non_blocking=True)
 
       # compute output

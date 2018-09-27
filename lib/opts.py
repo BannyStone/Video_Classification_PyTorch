@@ -22,7 +22,6 @@ parser = argparse.ArgumentParser(description="PyTorch implementation of Video Cl
 parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics400'])
 parser.add_argument('train_list', type=str)
 parser.add_argument('val_list', type=str)
-parser.add_argument('data_root', type=str)
 
 # ========================= Model Configs ==========================
 parser.add_argument('--arch', '-a', type=str, default="resnet18")

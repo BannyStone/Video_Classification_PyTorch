@@ -10,7 +10,6 @@ import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim
 
-
 from lib.dataset import VideoDataSet
 from lib.models import VideoModule
 from lib.transforms import *
@@ -35,6 +34,9 @@ def main():
         num_class = 200
     else:
         raise ValueError('Unknown dataset '+args.dataset)
+
+    data_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
+                             "data/{}".format(args.dataset))
 
     # create model
     org_model = VideoModule(num_class=num_class, 
@@ -68,8 +70,6 @@ def main():
         else:
             print(("=> no checkpoint found at '{}'".format(args.resume)))
 
-    cudnn.benchmark = True
-
     # Data loading code
     ## train data
     train_transform = torchvision.transforms.Compose([
@@ -78,7 +78,7 @@ def main():
         ToTorchFormatTensor(),
         GroupNormalize(),
         ])
-    train_dataset = VideoDataSet(root_path=args.data_root, 
+    train_dataset = VideoDataSet(root_path=data_root, 
         list_file=args.train_list,
         t_length=args.t_length, 
         t_stride=args.t_stride, 
@@ -98,7 +98,7 @@ def main():
         ToTorchFormatTensor(),
         GroupNormalize(),
         ])
-    val_dataset = VideoDataSet(root_path=args.data_root, 
+    val_dataset = VideoDataSet(root_path=data_root, 
         list_file=args.val_list,
         t_length=args.t_length,
         t_stride=args.t_stride,
@@ -107,10 +107,12 @@ def main():
         phase="Val")
     val_loader = torch.utils.data.DataLoader(
         val_dataset,
-        batch_size=args.batch_size, shuffle=False, drop_last=True, 
+        batch_size=args.batch_size, shuffle=False, 
         num_workers=args.workers, pin_memory=True)
 
-    # if args.evaluate:
+    if args.mode != "3D":
+        cudnn.benchmark = True
+
     validate(val_loader, model, criterion, args.print_freq, 0)
 
     for epoch in range(args.start_epoch, args.epochs):
