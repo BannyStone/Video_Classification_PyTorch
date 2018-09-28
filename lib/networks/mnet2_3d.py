@@ -124,12 +124,12 @@ class MobileNetV2_3D(nn.Module):
 
     def _initialize_weights(self):
         for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+            if isinstance(m, nn.Conv3d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.kernel_size[2] * m.out_channels
                 m.weight.data.normal_(0, math.sqrt(2. / n))
                 if m.bias is not None:
                     m.bias.data.zero_()
-            elif isinstance(m, nn.BatchNorm2d):
+            elif isinstance(m, nn.BatchNorm3d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
             elif isinstance(m, nn.Linear):
@@ -163,10 +163,10 @@ def inflate_state_dict(pretrained_dict, model_dict):
     return pretrained_dict
 
 def mnet2_3d(pretrained=None, feat=False):
-    if feat:
-        assert(pretrained != None and os.path.exists(pretrained)), "pretrained model must be ready when using feat."
+    if pretrained != None:
+        assert(os.path.exists(pretrained)), "pretrained model does not exist."
     model = MobileNetV2_3D(feat=feat)
-    if feat:
+    if pretrained:
         state_dict = torch.load(pretrained, map_location=lambda storage, loc: storage)
         state_dict = part_state_dict(state_dict, model.state_dict())
         model.load_state_dict(state_dict)

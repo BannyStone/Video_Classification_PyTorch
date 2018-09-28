@@ -241,7 +241,7 @@ class Bottleneck3D_000(nn.Module):
 
 class ResNet3D(nn.Module):
 
-    def __init__(self, block, layers, num_classes=1000, feat=False):
+    def __init__(self, block, layers, num_classes=1000, feat=False, lite=False):
         if not isinstance(block, list):
             block = [block] * 4
         else:
@@ -257,7 +257,7 @@ class ResNet3D(nn.Module):
         self.maxpool = nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1))
         self.layer1 = self._make_layer(block[0], 64, layers[0])
         self.layer2 = self._make_layer(block[1], 128, layers[1], stride=2)
-        self.layer3 = self._make_layer(block[2], 256, layers[2], stride=2, t_stride=2)
+        self.layer3 = self._make_layer(block[2], 256, layers[2], stride=2, t_stride=2 if not lite else 1)
         self.layer4 = self._make_layer(block[3], 512, layers[3], stride=2, t_stride=2)
         self.avgpool = nn.AvgPool3d(kernel_size=(4, 7, 7), stride=1)
         self.feat_dim = 512 * block[0].expansion
@@ -401,6 +401,19 @@ def resnet50_3d(pretrained=False, feat=False, **kwargs):
             model.load_state_dict(new_state_dict)
     return model
 
+def resnet50_3d_lite(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_100], 
+                     [3, 4, 6, 3], feat=feat, lite=True, **kwargs)
+    if pretrained:
+        state_dict = model_zoo.load_url(model_urls['resnet50'])
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
 
 # def resnet101(pretrained=False, feat=False, **kwargs):
 #     """Constructs a ResNet-101 model.

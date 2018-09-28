@@ -45,6 +45,10 @@ def main():
         t_stride=args.t_stride,
         dropout=args.dropout,
         pretrained=args.pretrained)
+    num_params = 0
+    for param in org_model.parameters():
+        num_params += param.reshape((-1, 1)).shape[0]
+    print("Model Size is {:.3f}M".format(num_params/1000000))
 
     model = torch.nn.DataParallel(org_model).cuda()
 
