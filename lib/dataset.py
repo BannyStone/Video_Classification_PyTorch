@@ -25,8 +25,8 @@ class VideoRecord(object):
 
 
 class VideoDataSet(data.Dataset):
-    def __init__(self, root_path, list_file,
-                 t_length=32, t_stride=2,
+    def __init__(self, root_path, list_file, 
+                 t_length=32, t_stride=2, num_segments=3, 
                  image_tmpl='img_{:05d}.jpg', 
                  transform=None, style="Dense", 
                  phase="Train"):
@@ -39,6 +39,7 @@ class VideoDataSet(data.Dataset):
         self.list_file = list_file
         self.t_length = t_length
         self.t_stride = t_stride
+        self.num_segments = num_segments
         self.image_tmpl = image_tmpl
         self.transform = transform
         assert(style == "Dense"), "Sparse is not supported yet."
@@ -90,10 +91,16 @@ class VideoDataSet(data.Dataset):
         get indices in test phase
         """
         valid_offset_range = record.num_frames - (self.t_length - 1) * self.t_stride - 1
-        offset = int(valid_offset_range / 2.0)
-        if offset < 0:
-            offset = 0
-        return [offset + 1]
+        interval = valid_offset_range / (self.num_segments - 1)
+        offsets = []
+        for i in range(self.num_segments):
+            offset = int(i * interval)
+            if offset > valid_offset_range:
+                offset = valid_offset_range
+            if offset < 0:
+                offset = 0
+            offsets.append(offset)
+        return offsets
 
     def __getitem__(self, index):
         record = self.video_list[index]
@@ -103,7 +110,7 @@ class VideoDataSet(data.Dataset):
         elif self.phase == "Val":
             indices = self._get_val_indices(record)
         elif self.phase == "Test":
-            raise NotImplementedError
+            indices = self._get_test_indices(record)
         else:
             raise TypeError("Unsuported phase {}".format(self.phase))
 

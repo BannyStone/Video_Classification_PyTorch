@@ -86,11 +86,7 @@ class GroupOverSample(object):
                 crop = img.crop((o_w, o_h, o_w + crop_w, o_h + crop_h))
                 normal_group.append(crop)
                 flip_crop = crop.copy().transpose(Image.FLIP_LEFT_RIGHT)
-
-                if img.mode == 'L' and i % 2 == 0:
-                    flip_group.append(ImageOps.invert(flip_crop))
-                else:
-                    flip_group.append(flip_crop)
+                flip_group.append(flip_crop)
 
             oversample_group.extend(normal_group)
             oversample_group.extend(flip_group)
@@ -221,12 +217,12 @@ class GroupRandomSizedCrop(object):
 class Stack(object):
 
     def __init__(self, mode="3D"):
-        """Support modes: ["3D", "TSN", "2D"]
+        """Support modes: ["3D", "TSN", "2D", "TSN+3D"]
         """
-        assert(mode in ["3D", "TSN", "2D"]), "Unsupported mode: {}".format()
+        assert(mode in ["3D", "TSN", "2D", "TSN+3D"]), "Unsupported mode: {}".format()
         self.mode = mode
 
-    def __call__(self, img_group):
+    def __call__(self, img_group, num_segments=None):
         """Only support RGB mode now
         img_group: list([h, w, c])
         """
@@ -240,6 +236,10 @@ class Stack(object):
         elif self.mode == "2D":
             assert(len(img_group) == 1), "Only one frame can be input in 2D mode."
             imgs = torch.from_numpy(np.array(img_group[0])).permute(2, 0, 1).contiguous()
+        elif self.mode == "TSN+3D":
+            assert(num_segments is not None), "In TSN+3D mode, num_segments must be specified."
+            imgs = np.concatenate([np.array(img)[np.newaxis, ...] for img in img_group], axis=0)
+            imgs = torch.from_numpy(imgs).permute(3, 0, 1, 2).contiguous()
         return imgs
 
 

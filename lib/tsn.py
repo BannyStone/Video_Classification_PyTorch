@@ -7,7 +7,7 @@ from .networks.resnet_3d import *
 
 from .transforms import *
 
-class VideoModule(nn.Module):
+class TSN(nn.Module):
     def __init__(self, num_class, base_model_name='resnet50', t_length=None,
         t_stride=2, before_softmax=True, dropout=0.8, pretrained=True):
         super(VideoModule, self).__init__()
@@ -63,13 +63,3 @@ class VideoModule(nn.Module):
             out = self.softmax(out)
 
         return out
-
-    def get_augmentation(self):
-        return torchvision.transforms.Compose([GroupMultiScaleCrop(input_size=224, scales=[1, .875, .75, .66]),
-                                                   GroupRandomHorizontalFlip()])
-
-class TSN(nn.Module):
-    """Temporal Segment Network
-    
-    """
-    def __init__():
