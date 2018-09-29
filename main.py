@@ -36,7 +36,7 @@ def main():
         raise ValueError('Unknown dataset '+args.dataset)
 
     data_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
-                             "data/{}".format(args.dataset))
+                             "data/{}/access".format(args.dataset))
 
     # create model
     org_model = VideoModule(num_class=num_class, 
@@ -117,7 +117,7 @@ def main():
     if args.mode != "3D":
         cudnn.benchmark = True
 
-    validate(val_loader, model, criterion, args.print_freq, 0)
+    validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch, args.lr_steps)

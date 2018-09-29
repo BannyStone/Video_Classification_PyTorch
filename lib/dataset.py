@@ -85,6 +85,16 @@ class VideoDataSet(data.Dataset):
             offset = 0
         return [offset + 1]
 
+    def _get_test_indices(self, record):
+        """
+        get indices in test phase
+        """
+        valid_offset_range = record.num_frames - (self.t_length - 1) * self.t_stride - 1
+        offset = int(valid_offset_range / 2.0)
+        if offset < 0:
+            offset = 0
+        return [offset + 1]
+
     def __getitem__(self, index):
         record = self.video_list[index]
 

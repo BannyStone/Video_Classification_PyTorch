@@ -1,7 +1,12 @@
 import os
 import matplotlib.pyplot as plt
 
-log_file = "/home/leizhou/CVPR2019/vid_cls/output/kinetics400_mnet2_2D_length1_stride2_dropout0.2/log/logfile_25_Sep_2018_12:58:33"
+files = os.listdir("log")
+for ind, file in enumerate(files):
+	if not file.startswith('logfile'):
+		files.pop(ind)
+print(files)
+files = ["log/"+file for file in files]
 
 class log_parser():
 	def __init__(self, landmark, log_file, key_words=[], 
@@ -18,56 +23,84 @@ class log_parser():
 	def __add__(self, other):
 		"""Add two log parsers of same type.
 		"""
-		pass
+		assert hasattr(self, "hist") and hasattr(other, "hist"), "Parse before adding."
+		for key in self.hist.keys():
+			assert key in other.hist, "Mush share key when adding."
+			self.hist[key].update(other.hist[key])
+		return self
 
 	def parse(self):
+		# parse info into list
 		for line in self.lines:
-			items = line.split()
+			items = line.strip().split()
+			if self.landmark not in items:
+				continue
 			for word in self.key_words:
-				if self.landmark not in items:
-					break
-				if word not in items:
-					break
+				assert(word in items), "Key word should be in target line."
+			for word in self.key_words:
 				ind = items.index(word) + 1
-				try:
-					self.log_info[word].append(float(items[ind]))
-				except:
+				if word == "Epoch:":
 					self.log_info[word].append(items[ind])
+				else:
+					self.log_info[word].append(float(items[ind]))
+
+		# convert epoch string
+		self.convert_epoch_string()
+		# find the key for the later dict
+		if "Epoch:" in self.key_words:
+			key = "Epoch:"
+		else:
+			key = "Epoch"
+
+		# build hist
+		self.hist = {}
+		for word in self.key_words:
+			if "Epoch" not in word:
+				self.hist[word] = {}
+				for k, v in zip(self.log_info[key], self.log_info[word]):
+					self.hist[word].update({k: v})
 
 	def convert_epoch_string(self):
-		epochs = self.log_info['Epoch:']
-		for idx, epoch_str in enumerate(epochs):
-			epoch_num, fraction = epoch_str[1:-2].split("][")
-			epoch = float(epoch_num) + eval(fraction)
-			epochs[idx] = epoch
+		if "Epoch:" in self.log_info:
+			epochs = self.log_info['Epoch:']
+			for idx, epoch_str in enumerate(epochs):
+				epoch_num, fraction = epoch_str[1:-2].split("][")
+				epoch = float(epoch_num) + eval(fraction)
+				epochs[idx] = epoch
 
-if __name__ == "__main__":
-	# os.listdir()
-	# Train Loss Parser
-	tr_parser = log_parser("lr:", log_file, key_words=['Epoch:'])
-	tr_parser.parse()
-	tr_parser.convert_epoch_string()
-	# Train Loss x, y axis
-	x = tr_parser.log_info['Epoch:']
-	loss = tr_parser.log_info['Loss']
+def plot(files, tr_landmark="lr:", ts_landmark="Testing"):
+	if not isinstance(files, list):
+		files = [files]
+
+	file = files[0]
+	tr_parser_base = log_parser(tr_landmark, files[0], key_words=['Epoch:'])
+	tr_parser_base.parse()
+	ts_parser_base = log_parser(ts_landmark, files[0], key_words=['Epoch'])
+	ts_parser_base.parse()
+	if len(files) > 1:
+		for file in files[1:]:
+			tr_parser = log_parser(tr_landmark, file, key_words=['Epoch:'])
+			tr_parser.parse()
+			ts_parser = log_parser(ts_landmark, file, key_words=['Epoch'])
+			ts_parser.parse()
+			tr_parser_base += tr_parser
+			ts_parser_base += ts_parser
+
 	fig, ax = plt.subplots()
-	ax.plot(x, loss, label='Loss')
-	ax.set(xlabel="Epoch", ylabel='Loss', title='Train Loss')
+	ax.plot(tr_parser_base.hist['Loss'].keys(), tr_parser_base.hist['Loss'].values(), label='Train Loss')
+	ax.plot(ts_parser_base.hist['Loss'].keys(), ts_parser_base.hist['Loss'].values(), label='Val Loss')
+	ax.set(xlabel="Epoch", ylabel='Loss', title='Loss')
 	ax.grid()
 	ax.legend(loc='upper right', shadow=False, fontsize='x-large')
 	plt.show()
 
-	# Test Acc Parser
-	ts_parser = log_parser("Testing", log_file, key_words=['Epoch'])
-	ts_parser.parse()
-	# Test Acc x, y axis
-	x = ts_parser.log_info['Epoch']
-	top1 = ts_parser.log_info['Prec@1']
-	top5 = ts_parser.log_info['Prec@5']
 	fig, ax = plt.subplots()
-	ax.plot(x, top1, label='Prec@1')
-	ax.plot(x, top5, 'g--', label='Prec@5')
+	ax.plot(ts_parser_base.hist['Prec@1'].keys(), ts_parser_base.hist['Prec@1'].values(), label='Prec@1')
+	ax.plot(ts_parser_base.hist['Prec@5'].keys(), ts_parser_base.hist['Prec@5'].values(), 'g--', label='Prec@5')
 	ax.set(xlabel="Epoch", ylabel='Prec', title='Test Acc')
 	ax.grid()
-	ax.legend(loc='upper right', shadow=False, fontsize='x-large')
+	ax.legend(loc='lower right', shadow=False, fontsize='x-large')
 	plt.show()
+
+if __name__ == "__main__":
+	plot(files)
