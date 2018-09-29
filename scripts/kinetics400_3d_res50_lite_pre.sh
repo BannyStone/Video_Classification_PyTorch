@@ -14,4 +14,5 @@ data/kinetics400/kinetics_val_list.txt \
 --batch-size 64 \
 --lr 0.001 \
 --lr_steps 40 80 90 \
---workers 32
+--workers 32 \
+--resume output/kinetics400_resnet50_3d_lite_3D_length8_stride8_dropout0.2/checkpoint_48epoch.pth
