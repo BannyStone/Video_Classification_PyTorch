@@ -15,4 +15,4 @@ data/kinetics400/kinetics_val_list.txt \
 --lr 0.001 \
 --lr_steps 40 80 90 \
 --workers 32 \
---resume output/kinetics400_resnet50_3d_3D_length16_stride4_dropout0.2/checkpoint_34epoch.pth
+--resume output/kinetics400_resnet50_3d_3D_length16_stride4_dropout0.2/checkpoint_70epoch.pth

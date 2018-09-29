@@ -7,6 +7,7 @@ for ind, file in enumerate(files):
 		files.pop(ind)
 print(files)
 files = ["log/"+file for file in files]
+files.sort()
 
 class log_parser():
 	def __init__(self, landmark, log_file, key_words=[], 
