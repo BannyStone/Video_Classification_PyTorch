@@ -41,8 +41,6 @@ def main():
     # create model
     org_model = VideoModule(num_class=num_class, 
         base_model_name=args.arch,
-        t_length=args.t_length,
-        t_stride=args.t_stride,
         dropout=args.dropout,
         pretrained=args.pretrained)
     num_params = 0
@@ -120,7 +118,7 @@ def main():
     validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
 
     for epoch in range(args.start_epoch, args.epochs):
-        adjust_learning_rate(optimizer, epoch, args.lr_steps)
+        adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)
 
         # train for one epoch
         train(train_loader, model, criterion, optimizer, epoch, args.print_freq)
@@ -138,7 +136,7 @@ def main():
                 'state_dict': model.state_dict(),
                 'best_metric': best_metric,
                 'optimizer': optimizer.state_dict(),
-            }, is_best, epoch + 1)
+            }, is_best, epoch + 1, args.experiment_root)
 
 if __name__ == '__main__':
     main()

@@ -3,7 +3,6 @@ import numpy as np
 import logging
 import torch
 import shutil
-from ..opts import args
 
 __all__ = ['AverageMeter', 'save_checkpoint', 'adjust_learning_rate', 'accuracy']
 
@@ -24,20 +23,19 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
-def save_checkpoint(state, is_best, epoch, filename='checkpoint_{}epoch.pth'):
-    filename = os.path.join(args.experiment_root, filename.format(epoch))
+def save_checkpoint(state, is_best, epoch, experiment_root, filename='checkpoint_{}epoch.pth'):
+    filename = os.path.join(experiment_root, filename.format(epoch))
     logging.info("saving model to {}...".format(filename))
     torch.save(state, filename)
     if is_best:
-        best_name = os.path.join(args.experiment_root, 'model_best.pth')
+        best_name = os.path.join(experiment_root, 'model_best.pth')
         shutil.copyfile(filename, best_name)
     logging.info("saving done.")
 
-def adjust_learning_rate(optimizer, epoch, lr_steps):
+def adjust_learning_rate(optimizer, base_lr, epoch, lr_steps):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     decay = 0.1 ** (sum(epoch >= np.array(lr_steps)))
-    lr = args.lr * decay
-    # decay = args.weight_decay
+    lr = base_lr * decay
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 

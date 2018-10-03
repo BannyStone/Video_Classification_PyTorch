@@ -219,27 +219,22 @@ class Stack(object):
     def __init__(self, mode="3D"):
         """Support modes: ["3D", "TSN", "2D", "TSN+3D"]
         """
-        assert(mode in ["3D", "TSN", "2D", "TSN+3D"]), "Unsupported mode: {}".format()
+        assert(mode in ["3D", "TSN+2D", "2D", "TSN+3D"]), "Unsupported mode: {}".format()
         self.mode = mode
 
-    def __call__(self, img_group, num_segments=None):
+    def __call__(self, img_group):
         """Only support RGB mode now
         img_group: list([h, w, c])
         """
         assert(img_group[0].mode == 'RGB'), "Must read images in RGB mode."
-        if self.mode == "3D":
+        if "3D" in self.mode:
             imgs = np.concatenate([np.array(img)[np.newaxis, ...] for img in img_group], axis=0)
             imgs = torch.from_numpy(imgs).permute(3, 0, 1, 2).contiguous()
-        elif self.mode == "TSN":
+        elif "2D" in self.mode:
             imgs = np.concatenate([np.array(img) for img in img_group], axis=2)
             imgs = torch.from_numpy(imgs).permute(2, 0, 1).contiguous()
-        elif self.mode == "2D":
-            assert(len(img_group) == 1), "Only one frame can be input in 2D mode."
-            imgs = torch.from_numpy(np.array(img_group[0])).permute(2, 0, 1).contiguous()
-        elif self.mode == "TSN+3D":
-            assert(num_segments is not None), "In TSN+3D mode, num_segments must be specified."
-            imgs = np.concatenate([np.array(img)[np.newaxis, ...] for img in img_group], axis=0)
-            imgs = torch.from_numpy(imgs).permute(3, 0, 1, 2).contiguous()
+        else:
+            raise Exception("Unsupported mode.")
         return imgs
 
 

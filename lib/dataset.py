@@ -26,7 +26,7 @@ class VideoRecord(object):
 
 class VideoDataSet(data.Dataset):
     def __init__(self, root_path, list_file, 
-                 t_length=32, t_stride=2, num_segments=3, 
+                 t_length=32, t_stride=2, num_segments=1, 
                  image_tmpl='img_{:05d}.jpg', 
                  transform=None, style="Dense", 
                  phase="Train"):
@@ -63,6 +63,7 @@ class VideoDataSet(data.Dataset):
         """
         offset = 0
         average_duration = record.num_frames - (self.t_length - 1) * self.t_stride - 1
+        # average_duration /= self.num_segments
         if average_duration >= 0:
             offset = randint(average_duration + 1)
         elif record.num_frames > self.t_length:
@@ -99,7 +100,7 @@ class VideoDataSet(data.Dataset):
                 offset = valid_offset_range
             if offset < 0:
                 offset = 0
-            offsets.append(offset)
+            offsets.append(offset + 1)
         return offsets
 
     def __getitem__(self, index):
