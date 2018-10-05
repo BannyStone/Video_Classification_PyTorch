@@ -105,7 +105,8 @@ class TSN(nn.Module):
                               output.shape[0] // (self.batch_size * self.num_segments), 
                               self.num_segments, output.shape[1]))
         if self.crop_fusion_type == 'max':
-            output = output.max(1).squeeze(1)
+            # pdb.set_trace()
+            output = output.max(1)[0].squeeze(1)
         elif self.crop_fusion_type == 'avg':
             output = output.mean(1).squeeze(1)
         pred = output.mean(1).squeeze(1)
