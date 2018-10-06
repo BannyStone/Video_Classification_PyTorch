@@ -42,7 +42,8 @@ def main():
     org_model = VideoModule(num_class=num_class, 
         base_model_name=args.arch,
         dropout=args.dropout,
-        pretrained=args.pretrained)
+        pretrained=args.pretrained,
+        pretrained_model=args.pretrained_model)
     num_params = 0
     for param in org_model.parameters():
         num_params += param.reshape((-1, 1)).shape[0]

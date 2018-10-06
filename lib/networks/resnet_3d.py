@@ -1,7 +1,7 @@
 """
 Modify the original file to make the class support feature extraction
 """
-
+import torch
 import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
@@ -241,7 +241,7 @@ class Bottleneck3D_000(nn.Module):
 
 class ResNet3D(nn.Module):
 
-    def __init__(self, block, layers, num_classes=1000, feat=False, lite=False):
+    def __init__(self, block, layers, num_classes=1000, feat=False, lite=False, **kwargs):
         if not isinstance(block, list):
             block = [block] * 4
         else:
@@ -394,8 +394,14 @@ def resnet50_3d(pretrained=False, feat=False, **kwargs):
     """
     model = ResNet3D([Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_100, Bottleneck3D_100], 
                      [3, 4, 6, 3], feat=feat, **kwargs)
+    # import pdb
+    # pdb.set_trace()
     if pretrained:
-        state_dict = model_zoo.load_url(model_urls['resnet50'])
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
         if feat:
             new_state_dict = part_state_dict(state_dict, model.state_dict())
             model.load_state_dict(new_state_dict)

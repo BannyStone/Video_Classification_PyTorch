@@ -19,7 +19,7 @@ def set_logger(debug_mode=False):
                 handlers = handlers)
 
 parser = argparse.ArgumentParser(description="PyTorch implementation of Video Classification")
-parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics400'])
+parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics400', 'kinetics200'])
 parser.add_argument('train_list', type=str)
 parser.add_argument('val_list', type=str)
 
@@ -31,6 +31,7 @@ parser.add_argument('--mode', type=str, default='3D', choices=['3D', 'TSN', '2D'
 parser.add_argument('--t_length', type=int, default=32, help="time length")
 parser.add_argument('--t_stride', type=int, default=2, help="time stride between frames")
 parser.add_argument('--pretrained', action='store_true')
+parser.add_argument('--pretrained_model', type=str, default=None)
 
 # ========================= Learning Configs ==========================
 parser.add_argument('--epochs', default=60, type=int, metavar='N',
@@ -70,6 +71,11 @@ if args.mode == "2D":
 experiment_id = '_'.join(map(str, [args.dataset, args.arch, args.mode, 
            'length'+str(args.t_length), 'stride'+str(args.t_stride), 
            'dropout'+str(args.dropout)]))
+
+if args.pretrained and args.pretrained_model:
+    if "2d" in args.pretrained_model:
+        experiment_id += '_2dpretrained'
+
 args.experiment_root = os.path.join(args.output_root, experiment_id)
 # init logger
 set_logger()

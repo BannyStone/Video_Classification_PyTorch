@@ -11,13 +11,14 @@ import pdb
 
 class VideoModule(nn.Module):
     def __init__(self, num_class, base_model_name='resnet50', 
-                 before_softmax=True, dropout=0.8, pretrained=True):
+                 before_softmax=True, dropout=0.8, pretrained=True, pretrained_model=None):
         super(VideoModule, self).__init__()
         self.num_class = num_class
         self.base_model_name = base_model_name
         self.before_softmax = before_softmax
         self.dropout = dropout
         self.pretrained = pretrained
+        self.pretrained_model = pretrained_model
 
         self._prepare_base_model(base_model_name)
 
@@ -28,10 +29,14 @@ class VideoModule(nn.Module):
         """
         base_model+(dropout)+classifier
         """
-        
+        if self.pretrained and self.pretrained_model:
+            model_dict = torch.load(self.pretrained_model)
+            base_model_dict = {k: v for k, v in model_dict.items() if "classifier" not in k}
+            classifier_dict = {'.'.join(k.split('.')[1:]): v for k, v in model_dict.items() if "classifier" in k}
         # base model
         if "resnet" in base_model_name:
-            self.base_model = eval(base_model_name)(pretrained=self.pretrained, feat=True)
+            self.base_model = eval(base_model_name)(pretrained=self.pretrained, \
+                                   feat=True, pretrained_model=base_model_dict)
         elif base_model_name == "mnet2":
             model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
                                       "../models/mobilenet_v2.pth.tar")
@@ -54,6 +59,11 @@ class VideoModule(nn.Module):
             if isinstance(m, nn.Linear):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='linear')
                 nn.init.constant_(m.bias, 0)
+        
+        if self.pretrained and self.pretrained_model:
+            pass
+            # print("load classifier")
+            # self.classifier.load_state_dict(classifier_dict)
 
     def forward(self, input):
         out = self.base_model(input)
