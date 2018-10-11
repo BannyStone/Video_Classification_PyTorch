@@ -29,6 +29,8 @@ class VideoModule(nn.Module):
         """
         base_model+(dropout)+classifier
         """
+        base_model_dict = None
+        classifier_dict = None
         if self.pretrained and self.pretrained_model:
             model_dict = torch.load(self.pretrained_model)
             base_model_dict = {k: v for k, v in model_dict.items() if "classifier" not in k}
@@ -90,6 +92,7 @@ class VideoShadowModule(nn.Module):
         self.pretrained_model = pretrained_model
 
         self._prepare_base_model(base_model_name)
+        self._cast_shadow()
 
         if not self.before_softmax:
             self.softmax = nn.Softmax()
@@ -134,7 +137,7 @@ class VideoShadowModule(nn.Module):
             # print("load classifier")
             # self.classifier.load_state_dict(classifier_dict)
 
-    def _cast_shadow(self):
+    def _cast_shadow(self, stereo_net, shadow_cache):
 
 
     def forward(self, input):
