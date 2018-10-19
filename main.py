@@ -50,6 +50,7 @@ def main():
     print("Model Size is {:.3f}M".format(num_params/1000000))
 
     model = torch.nn.DataParallel(org_model).cuda()
+    # model = org_model
 
     # define loss function (criterion) and optimizer
     criterion = torch.nn.CrossEntropyLoss().cuda()
@@ -85,7 +86,8 @@ def main():
         list_file=args.train_list,
         t_length=args.t_length, 
         t_stride=args.t_stride, 
-        image_tmpl="image_{:06d}.jpg", 
+        num_segments=args.num_segments,
+        image_tmpl=args.image_tmpl, 
         transform=train_transform,
         phase="Train")
     train_loader = torch.utils.data.DataLoader(
@@ -105,7 +107,8 @@ def main():
         list_file=args.val_list,
         t_length=args.t_length,
         t_stride=args.t_stride,
-        image_tmpl="image_{:06d}.jpg",
+        num_segments=args.num_segments,
+        image_tmpl=args.image_tmpl,
         transform=val_transform,
         phase="Val")
     val_loader = torch.utils.data.DataLoader(
@@ -116,7 +119,7 @@ def main():
     if args.mode != "3D":
         cudnn.benchmark = True
 
-    validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
+    # validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)

@@ -6,8 +6,8 @@ import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
 
-from ..op_wrapper import Conv3d as flexConv3d
-from ..op_wrapper import BatchNorm3d as flexBatchNorm3d
+from ..op_wrapper import Conv2d as flexConv2d
+from ..op_wrapper import BatchNorm2d as flexBatchNorm2d
 from ..op_wrapper import Linear as flexLinear
 
 class flexBottleneck(nn.Module):
@@ -15,13 +15,13 @@ class flexBottleneck(nn.Module):
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super(flexBottleneck, self).__init__()
-        self.conv1 = flexConv3d(inplanes, planes, kernel_size=1, bias=False)
-        self.bn1 = flexBatchNorm3d(planes)
-        self.conv2 = flexConv3d(planes, planes, kernel_size=(1,3,3), stride=(1,stride,stride),
-                                padding=(0,1,1), bias=False)
-        self.bn2 = flexBatchNorm3d(planes)
-        self.conv3 = flexConv3d(planes, planes * self.expansion, kernel_size=1, bias=False)
-        self.bn3 = flexBatchNorm3d(planes * self.expansion)
+        self.conv1 = flexConv2d(inplanes, planes, kernel_size=1, bias=False)
+        self.bn1 = flexBatchNorm2d(planes)
+        self.conv2 = flexConv2d(planes, planes, kernel_size=3, stride=stride,
+                                padding=1, bias=False)
+        self.bn2 = flexBatchNorm2d(planes)
+        self.conv3 = flexConv2d(planes, planes * self.expansion, kernel_size=1, bias=False)
+        self.bn3 = flexBatchNorm2d(planes * self.expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
@@ -48,11 +48,11 @@ class flexBottleneck(nn.Module):
 
         return out
 
-class ReShadowNet(nn.Module):
+class ReShadowNet2D(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000, feat=False):
         self.inplanes = 64
-        super(ReShadowNet, self).__init__()
+        super(ReShadowNet2D, self).__init__()
         self.feat = feat
         self.conv1 = flexConv3d(3, 64, kernel_size=(1,7,7), stride=(1,2,2), padding=(0,3,3), bias=False)
         self.bn1 = flexBatchNorm3d(64)
@@ -96,7 +96,7 @@ class ReShadowNet(nn.Module):
         x = self.layer4(x)
 
         x = self.avgpool(x)
-        x = x.view(x.size(0), x.size(1), x.size(2))
+        x = x.view(x.size(0), -1)
         if not self.feat:
             x = self.fc(x)
 
@@ -107,5 +107,5 @@ def resnet50_shadow(feat=False, **kwargs):
     Args:
         feat: if True, abandon pre-defined fc layer
     """
-    model = ReShadowNet(flexBottleneck, [3, 4, 6, 3], feat=feat, **kwargs)
+    model = ReShadowNet2D(flexBottleneck, [3, 4, 6, 3], feat=feat, **kwargs)
     return model

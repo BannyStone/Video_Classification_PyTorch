@@ -25,11 +25,13 @@ parser.add_argument('val_list', type=str)
 
 # ========================= Model Configs ==========================
 parser.add_argument('--arch', '-a', type=str, default="resnet18")
+parser.add_argument('--shadow', action='store_true')
 parser.add_argument('--dropout', '--do', default=0.2, type=float,
                     metavar='DO', help='dropout ratio (default: 0.2)')
 parser.add_argument('--mode', type=str, default='3D', choices=['3D', 'TSN', '2D'])
 parser.add_argument('--t_length', type=int, default=32, help="time length")
 parser.add_argument('--t_stride', type=int, default=2, help="time stride between frames")
+parser.add_argument('--num_segments', type=int, default=1)
 parser.add_argument('--pretrained', action='store_true')
 parser.add_argument('--pretrained_model', type=str, default=None)
 
@@ -63,6 +65,7 @@ parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
 parser.add_argument('--output_root', type=str, default="./output")
+parser.add_argument('--image_tmpl', type=str, default="image_{:06d}.jpg")
 
 args = parser.parse_args()
 if args.mode == "2D":
@@ -75,6 +78,9 @@ experiment_id = '_'.join(map(str, [args.dataset, args.arch, args.mode,
 if args.pretrained and args.pretrained_model:
     if "2d" in args.pretrained_model:
         experiment_id += '_2dpretrained'
+
+if args.shadow:
+    experiment_id += '_shadow'
 
 args.experiment_root = os.path.join(args.output_root, experiment_id)
 # init logger

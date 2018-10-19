@@ -9,14 +9,17 @@ import torchvision
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim
+from torch.nn.parameter import Parameter
 
 from lib.dataset import VideoDataSet
-from lib.models import VideoModule
+from lib.models import VideoModule, VideoShadowModule
 from lib.transforms import *
 from lib.utils.tools import *
 from lib.opts import args
 
-from train_val import train, validate
+from shadow_train_val import train, validate
+
+import ipdb
 
 best_metric = 0
 
@@ -39,17 +42,19 @@ def main():
                              "data/{}/access".format(args.dataset))
 
     # create model
-    org_model = VideoModule(num_class=num_class, 
+    org_model = VideoShadowModule(num_class=num_class,
         base_model_name=args.arch,
         dropout=args.dropout,
         pretrained=args.pretrained,
         pretrained_model=args.pretrained_model)
     num_params = 0
     for param in org_model.parameters():
-        num_params += param.reshape((-1, 1)).shape[0]
+        if isinstance(param, Parameter):
+            num_params += param.reshape((-1, 1)).shape[0]
     print("Model Size is {:.3f}M".format(num_params/1000000))
 
     model = torch.nn.DataParallel(org_model).cuda()
+    # model = org_model.cuda()
 
     # define loss function (criterion) and optimizer
     criterion = torch.nn.CrossEntropyLoss().cuda()
@@ -85,8 +90,10 @@ def main():
         list_file=args.train_list,
         t_length=args.t_length, 
         t_stride=args.t_stride, 
-        image_tmpl="image_{:06d}.jpg", 
+        num_segments=args.num_segments,
+        image_tmpl=args.image_tmpl, 
         transform=train_transform,
+        style="UnevenDense" if args.shadow else "Dense",
         phase="Train")
     train_loader = torch.utils.data.DataLoader(
         train_dataset, 
@@ -101,22 +108,26 @@ def main():
         ToTorchFormatTensor(),
         GroupNormalize(),
         ])
-    val_dataset = VideoDataSet(root_path=data_root, 
+    val_dataset = VideoDataSet(root_path=data_root,
         list_file=args.val_list,
         t_length=args.t_length,
         t_stride=args.t_stride,
-        image_tmpl="image_{:06d}.jpg",
+        num_segments=args.num_segments,
+        image_tmpl=args.image_tmpl,
         transform=val_transform,
+        style="UnevenDense" if args.shadow else "Dense",
         phase="Val")
     val_loader = torch.utils.data.DataLoader(
         val_dataset,
-        batch_size=args.batch_size, shuffle=False, 
+        batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True)
 
     if args.mode != "3D":
         cudnn.benchmark = True
 
-    validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
+    # ipdb.set_trace()
+
+    # validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)
