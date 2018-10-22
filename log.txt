@@ -1,4 +1,4 @@
-2018-10-18 20:14:28: Namespace(arch='resnet50_3d', batch_size=8, dataset='ucf101', dropout=0.2, epochs=95, eval_freq=2, evaluate=False, experiment_root='./output/ucf101_resnet50_3d_3D_length16_stride4_dropout0.2_shadow', image_tmpl='img_{:05d}.jpg', lr=0.001, lr_steps=[40.0, 80.0, 90.0], mode='3D', momentum=0.9, num_segments=3, output_root='./output', pretrained=True, pretrained_model=None, print_freq=20, resume='', shadow=True, start_epoch=0, t_length=16, t_stride=4, train_list='data/ucf101/ucf101_train_split1_list.txt', val_list='data/ucf101/ucf101_val_split1_list.txt', weight_decay=0.0005, workers=8)
+2018-10-21 01:02:29: Namespace(arch='resnet50_3d', batch_size=12, dataset='ucf101', dropout=0.2, epochs=95, eval_freq=2, evaluate=False, experiment_root='./output/ucf101_resnet50_3d_3D_length16_stride4_dropout0.2_shadow', image_tmpl='img_{:05d}.jpg', lr=0.001, lr_steps=[40.0, 80.0, 90.0], mode='3D', momentum=0.9, num_segments=3, output_root='./output', pretrained=True, pretrained_model=None, print_freq=20, resume='', shadow=True, start_epoch=0, t_length=16, t_stride=4, train_list='data/ucf101/ucf101_train_split1_list.txt', val_list='data/ucf101/ucf101_val_split1_list.txt', weight_decay=0.0005, workers=8)
 Layer conv1.weight needs inflation.
 Layer layer1.0.conv1.weight needs inflation.
 Layer layer1.0.conv2.weight needs inflation.
@@ -53,321 +53,492 @@ Layer layer4.2.conv1.weight needs inflation.
 Layer layer4.2.conv2.weight needs inflation.
 Layer layer4.2.conv3.weight needs inflation.
 Model Size is 31.841M
-first casting...
-Param Name conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-first casting...
-Param Name conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:1 cuda:1
-Param Name bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.0.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.0.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.0.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.0.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.0.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.0.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.0.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.0.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.0.downsample.0.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.0.downsample.1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.0.downsample.1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.downsample.0.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.1.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.downsample.1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.1.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.0.downsample.1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.1.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.1.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.1.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.1.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.1.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.1.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.1.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.1.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.1.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.1.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.1.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.1.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.1.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.1.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.2.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.1.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.2.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.1.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.2.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.2.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.2.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.2.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.2.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.2.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.2.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.2.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.2.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.2.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.2.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.2.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer1.2.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.2.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/TrueParam Name layer2.0.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
- | param device cuda:1 cuda:1
-Param Name layer2.0.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.2.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.0.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer1.2.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.0.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.0.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.0.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.0.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.0.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.0.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.0.downsample.0.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.0.downsample.1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.0.downsample.1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.1.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.downsample.0.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.1.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.downsample.1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.1.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.0.downsample.1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.1.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.1.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.1.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.1.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.1.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.1.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.1.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.1.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.1.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.1.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.1.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.1.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.2.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.1.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.2.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.1.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.2.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.1.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.2.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.2.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.2.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.2.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.2.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.2.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.2.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.2.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.2.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.2.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.2.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.2.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.3.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.2.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.3.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.2.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.3.bn1.bias | stereo leaf/req_gradParam Name layer2.2.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
- False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.3.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.3.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.3.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.3.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.3.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.3.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.3.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.3.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.3.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:1 cuda:1
-Param Name layer2.3.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.3.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.3.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.3.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.0.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer2.3.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer2.3.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.0.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.0.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.downsample.0.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.downsample.1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.0.downsample.1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.1.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.1.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.1.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.1.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.1.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.1.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.1.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.downsample.0.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.1.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.downsample.1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.1.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.0.downsample.1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.2.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.1.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.2.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.2.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.1.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.2.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.1.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.2.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.1.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.2.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.1.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:1 cuda:1
-Param Name layer3.2.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.1.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.2.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.1.conv3.weightParam Name layer3.2.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
- | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.3.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.1.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.1.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.3.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.2.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.3.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.3.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.2.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.3.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.2.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.3.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.2.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.3.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.2.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.3.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.2.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.3.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.2.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.4.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.2.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.2.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.4.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.3.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.4.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.4.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.3.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.4.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.3.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.4.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.3.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.4.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.3.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:1 cuda:1
-Param Name layer3.4.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.4.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.5.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.3.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.3.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.3.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.3.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.5.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.4.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.5.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.4.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.4.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.4.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.4.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.0.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.4.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.4.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.4.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.4.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.0.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.5.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.0.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer3.5.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:1 cuda:1
-Param Name layer3.5.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer3.5.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.0.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.0.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.downsample.0.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.downsample.1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.downsample.1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.1.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.0.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:1 cuda:1
-Param Name layer4.1.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.downsample.0.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.downsample.1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:1 cuda:1
-Param Name layer4.2.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.0.downsample.1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.2.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.1.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.2.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.2.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.2.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.2.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.2.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.2.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.2.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:0 cuda:0
-Param Name layer4.1.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.bn2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:1 cuda:1
-Param Name layer4.1.bn2.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.conv3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.bn3.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.1.bn3.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.2.conv1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.2.bn1.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad True/False | param device cuda:1 cuda:1
-Param Name layer4.2.bn1.bias | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
-Param Name layer4.2.conv2.weight | stereo leaf/req_grad False/True | shadow leaf/req_grad False/True | param device cuda:1 cuda:1
+input device: cuda:1 conv1.weight
+input device: cuda:1 bn1.weight
+input device: cuda:1 bn1.bias
+input device: cuda:1 layer1.0.conv1.weight
+input device: cuda:1 layer1.0.bn1.weight
+input device: cuda:1 layer1.0.bn1.bias
+input device: cuda:1 layer1.0.conv2.weight
+input device: cuda:1 layer1.0.bn2.weight
+input device: cuda:1 layer1.0.bn2.bias
+input device: cuda:1 layer1.0.conv3.weight
+input device: cuda:1 layer1.0.bn3.weight
+input device: cuda:1 layer1.0.bn3.bias
+input device: cuda:1 layer1.0.downsample.0.weight
+input device: cuda:1 layer1.0.downsample.1.weight
+input device: cuda:1 layer1.0.downsample.1.bias
+input device: cuda:1 layer1.1.conv1.weight
+input device: cuda:1 layer1.1.bn1.weight
+input device: cuda:1 layer1.1.bn1.bias
+input device: cuda:1 layer1.1.conv2.weight
+input device: cuda:1 layer1.1.bn2.weight
+input device: cuda:1 layer1.1.bn2.bias
+input device: cuda:1 layer1.1.conv3.weight
+input device: cuda:1 layer1.1.bn3.weight
+input device: cuda:1 layer1.1.bn3.bias
+input device: cuda:1 layer1.2.conv1.weight
+input device: cuda:1 layer1.2.bn1.weight
+input device: cuda:1 layer1.2.bn1.bias
+input device: cuda:1 layer1.2.conv2.weight
+input device: cuda:1 layer1.2.bn2.weight
+input device: cuda:1 layer1.2.bn2.bias
+input device: cuda:1 layer1.2.conv3.weight
+input device: cuda:1 layer1.2.bn3.weight
+input device: cuda:1 layer1.2.bn3.bias
+input device: cuda:1 layer2.0.conv1.weight
+input device: cuda:1 layer2.0.bn1.weight
+input device: cuda:1 layer2.0.bn1.bias
+input device: cuda:1 layer2.0.conv2.weight
+input device: cuda:1 layer2.0.bn2.weight
+input device: cuda:1 layer2.0.bn2.bias
+input device: cuda:1 layer2.0.conv3.weight
+input device: cuda:1 layer2.0.bn3.weight
+input device: cuda:1 layer2.0.bn3.bias
+input device: cuda:1 layer2.0.downsample.0.weight
+input device: cuda:1 layer2.0.downsample.1.weight
+input device: cuda:1 layer2.0.downsample.1.bias
+input device: cuda:1 layer2.1.conv1.weight
+input device: cuda:1 layer2.1.bn1.weight
+input device: cuda:1 layer2.1.bn1.bias
+input device: cuda:1 layer2.1.conv2.weight
+input device: cuda:1 layer2.1.bn2.weight
+input device: cuda:1 layer2.1.bn2.bias
+input device: cuda:1 layer2.1.conv3.weight
+input device: cuda:1 layer2.1.bn3.weight
+input device: cuda:1 layer2.1.bn3.bias
+input device: cuda:1 layer2.2.conv1.weight
+input device: cuda:1 layer2.2.bn1.weight
+input device: cuda:1 layer2.2.bn1.bias
+input device: cuda:1 layer2.2.conv2.weight
+input device: cuda:1 layer2.2.bn2.weight
+input device: cuda:1 layer2.2.bn2.bias
+input device: cuda:1 layer2.2.conv3.weight
+input device: cuda:1 layer2.2.bn3.weight
+input device: cuda:1 layer2.2.bn3.bias
+input device: cuda:1 layer2.3.conv1.weight
+input device: cuda:1 layer2.3.bn1.weight
+input device: cuda:1 layer2.3.bn1.bias
+input device: cuda:1 layer2.3.conv2.weight
+input device: cuda:1 layer2.3.bn2.weight
+input device: cuda:1 layer2.3.bn2.bias
+input device: cuda:1 layer2.3.conv3.weight
+input device: cuda:1 layer2.3.bn3.weight
+input device: cuda:1 layer2.3.bn3.bias
+input device: cuda:1 layer3.0.conv1.weight
+input device: cuda:1 layer3.0.bn1.weight
+input device: cuda:1 layer3.0.bn1.bias
+input device: cuda:1 layer3.0.conv2.weight
+input device: cuda:1 layer3.0.bn2.weight
+input device: cuda:1 layer3.0.bn2.bias
+input device: cuda:1 layer3.0.conv3.weight
+input device: cuda:1 layer3.0.bn3.weight
+input device: cuda:1 layer3.0.bn3.bias
+input device: cuda:1 layer3.0.downsample.0.weight
+input device: cuda:1 layer3.0.downsample.1.weight
+input device: cuda:1 layer3.0.downsample.1.bias
+input device: cuda:1 layer3.1.conv1.weight
+input device: cuda:1 layer3.1.bn1.weight
+input device: cuda:1 layer3.1.bn1.bias
+input device: cuda:1 layer3.1.conv2.weight
+input device: cuda:1 layer3.1.bn2.weight
+input device: cuda:1 layer3.1.bn2.bias
+input device: cuda:1 layer3.1.conv3.weight
+input device: cuda:1 layer3.1.bn3.weight
+input device: cuda:1 layer3.1.bn3.bias
+input device: cuda:1 layer3.2.conv1.weight
+input device: cuda:1 layer3.2.bn1.weight
+input device: cuda:1 layer3.2.bn1.bias
+input device: cuda:1 layer3.2.conv2.weight
+input device: cuda:1 layer3.2.bn2.weight
+input device: cuda:1 layer3.2.bn2.bias
+input device: cuda:1 layer3.2.conv3.weight
+input device: cuda:1 layer3.2.bn3.weight
+input device: cuda:1 layer3.2.bn3.bias
+input device: cuda:1 layer3.3.conv1.weight
+input device: cuda:1 layer3.3.bn1.weight
+input device: cuda:1 layer3.3.bn1.bias
+input device: cuda:1 layer3.3.conv2.weight
+input device: cuda:1 layer3.3.bn2.weight
+input device: cuda:1 layer3.3.bn2.bias
+input device: cuda:1 layer3.3.conv3.weight
+input device: cuda:1 layer3.3.bn3.weight
+input device: cuda:1 layer3.3.bn3.bias
+input device: cuda:1 layer3.4.conv1.weight
+input device: cuda:1 layer3.4.bn1.weight
+input device: cuda:1 layer3.4.bn1.bias
+input device: cuda:1 layer3.4.conv2.weight
+input device: cuda:1 layer3.4.bn2.weight
+input device: cuda:1 layer3.4.bn2.bias
+input device: cuda:1 layer3.4.conv3.weight
+input device: cuda:1 layer3.4.bn3.weight
+input device: cuda:1 layer3.4.bn3.bias
+input device: cuda:1 layer3.5.conv1.weight
+input device: cuda:1 layer3.5.bn1.weight
+input device: cuda:1 layer3.5.bn1.bias
+input device: cuda:1 layer3.5.conv2.weight
+input device: cuda:1 layer3.5.bn2.weight
+input device: cuda:1 layer3.5.bn2.bias
+input device: cuda:1 layer3.5.conv3.weight
+input device: cuda:1 layer3.5.bn3.weight
+input device: cuda:1 layer3.5.bn3.bias
+input device: cuda:1 layer4.0.conv1.weight
+input device: cuda:1 layer4.0.bn1.weight
+input device: cuda:1 layer4.0.bn1.bias
+input device: cuda:1 layer4.0.conv2.weight
+input device: cuda:1 layer4.0.bn2.weight
+input device: cuda:1 layer4.0.bn2.bias
+input device: cuda:1 layer4.0.conv3.weight
+input device: cuda:1 layer4.0.bn3.weight
+input device: cuda:1 layer4.0.bn3.bias
+input device: cuda:1 layer4.0.downsample.0.weight
+input device: cuda:1 layer4.0.downsample.1.weight
+input device: cuda:1 layer4.0.downsample.1.bias
+input device: cuda:1 layer4.1.conv1.weight
+input device: cuda:1 layer4.1.bn1.weight
+input device: cuda:1 layer4.1.bn1.bias
+input device: cuda:1 layer4.1.conv2.weight
+input device: cuda:1 layer4.1.bn2.weight
+input device: cuda:1 layer4.1.bn2.bias
+input device: cuda:1 layer4.1.conv3.weight
+input device: cuda:1 layer4.1.bn3.weight
+input device: cuda:1 layer4.1.bn3.bias
+input device: cuda:1 layer4.2.conv1.weight
+input device: cuda:1 layer4.2.bn1.weight
+input device: cuda:1 layer4.2.bn1.bias
+input device: cuda:1 layer4.2.conv2.weight
+input device: cuda:1 layer4.2.bn2.weight
+input device: cuda:1 layer4.2.bn2.bias
+input device: cuda:1 layer4.2.conv3.weight
+input device: cuda:1 layer4.2.bn3.weight
+input device: cuda:1 layer4.2.bn3.bias
+Module_name: conv1 | Param_name: weight | Device: cuda:1 PASS-------------------
+input_device: cuda:1 | param_device: cuda:1
+input device: cuda:1 | param device: cuda:1
+input device: cuda:0 conv1.weight
+input device: cuda:0 bn1.weight
+input device: cuda:0 bn1.bias
+input device: cuda:0 layer1.0.conv1.weight
+input device: cuda:0 layer1.0.bn1.weight
+input device: cuda:0 layer1.0.bn1.bias
+input device: cuda:0 layer1.0.conv2.weight
+input device: cuda:0 layer1.0.bn2.weight
+input device: cuda:0 layer1.0.bn2.bias
+input device: cuda:0 layer1.0.conv3.weight
+input device: cuda:0 layer1.0.bn3.weight
+input device: cuda:0 layer1.0.bn3.bias
+input device: cuda:0 layer1.0.downsample.0.weight
+input device: cuda:0 layer1.0.downsample.1.weight
+input device: cuda:0 layer1.0.downsample.1.bias
+input device: cuda:0 layer1.1.conv1.weight
+input device: cuda:0 layer1.1.bn1.weight
+input device: cuda:0 layer1.1.bn1.bias
+input device: cuda:0 layer1.1.conv2.weight
+input device: cuda:0 layer1.1.bn2.weight
+input device: cuda:0 layer1.1.bn2.bias
+input device: cuda:0 layer1.1.conv3.weight
+input device: cuda:0 layer1.1.bn3.weight
+input device: cuda:0 layer1.1.bn3.bias
+input device: cuda:0 layer1.2.conv1.weight
+input device: cuda:0 layer1.2.bn1.weight
+input device: cuda:0 layer1.2.bn1.bias
+input device: cuda:0 layer1.2.conv2.weight
+input device: cuda:0 layer1.2.bn2.weight
+input device: cuda:0 layer1.2.bn2.bias
+input device: cuda:0 layer1.2.conv3.weight
+input device: cuda:0 layer1.2.bn3.weight
+input device: cuda:0 layer1.2.bn3.bias
+input device: cuda:0 layer2.0.conv1.weight
+input device: cuda:0 layer2.0.bn1.weight
+input device: cuda:0 layer2.0.bn1.bias
+input device: cuda:0 layer2.0.conv2.weight
+input device: cuda:0 layer2.0.bn2.weight
+input device: cuda:0 layer2.0.bn2.bias
+input device: cuda:0 layer2.0.conv3.weight
+input device: cuda:0 layer2.0.bn3.weight
+input device: cuda:0 layer2.0.bn3.bias
+input device: cuda:0 layer2.0.downsample.0.weight
+input device: cuda:0 layer2.0.downsample.1.weight
+input device: cuda:0 layer2.0.downsample.1.bias
+input device: cuda:0 layer2.1.conv1.weight
+input device: cuda:0 layer2.1.bn1.weight
+input device: cuda:0 layer2.1.bn1.bias
+input device: cuda:0 layer2.1.conv2.weight
+input device: cuda:0 layer2.1.bn2.weight
+input device: cuda:0 layer2.1.bn2.bias
+input device: cuda:0 layer2.1.conv3.weight
+input device: cuda:0 layer2.1.bn3.weight
+input device: cuda:0 layer2.1.bn3.bias
+input device: cuda:0 layer2.2.conv1.weight
+input device: cuda:0 layer2.2.bn1.weight
+input device: cuda:0 layer2.2.bn1.bias
+input device: cuda:0 layer2.2.conv2.weight
+input device: cuda:0 layer2.2.bn2.weight
+input device: cuda:0 layer2.2.bn2.bias
+input device: cuda:0 layer2.2.conv3.weight
+input device: cuda:0 layer2.2.bn3.weight
+input device: cuda:0 layer2.2.bn3.bias
+input device: cuda:0 layer2.3.conv1.weight
+input device: cuda:0 layer2.3.bn1.weight
+input device: cuda:0 layer2.3.bn1.bias
+input device: cuda:0 layer2.3.conv2.weight
+input device: cuda:0 layer2.3.bn2.weight
+input device: cuda:0 layer2.3.bn2.bias
+input device: cuda:0 layer2.3.conv3.weight
+input device: cuda:0 layer2.3.bn3.weight
+input device: cuda:0 layer2.3.bn3.bias
+input device: cuda:0 layer3.0.conv1.weight
+input device: cuda:0 layer3.0.bn1.weight
+input device: cuda:0 layer3.0.bn1.bias
+input device: cuda:0 layer3.0.conv2.weight
+input device: cuda:0 layer3.0.bn2.weight
+input device: cuda:0 layer3.0.bn2.bias
+input device: cuda:0 layer3.0.conv3.weight
+input device: cuda:0 layer3.0.bn3.weight
+input device: cuda:0 layer3.0.bn3.bias
+input device: cuda:0 layer3.0.downsample.0.weight
+input device: cuda:0 layer3.0.downsample.1.weight
+input device: cuda:0 layer3.0.downsample.1.bias
+input device: cuda:0 layer3.1.conv1.weight
+input device: cuda:0 layer3.1.bn1.weight
+input device: cuda:0 layer3.1.bn1.bias
+input device: cuda:0 layer3.1.conv2.weight
+input device: cuda:0 layer3.1.bn2.weight
+input device: cuda:0 layer3.1.bn2.bias
+input device: cuda:0 layer3.1.conv3.weight
+input device: cuda:0 layer3.1.bn3.weight
+input device: cuda:0 layer3.1.bn3.bias
+input device: cuda:0 layer3.2.conv1.weight
+input device: cuda:0 layer3.2.bn1.weight
+input device: cuda:0 layer3.2.bn1.bias
+input device: cuda:0 layer3.2.conv2.weight
+input device: cuda:0 layer3.2.bn2.weight
+input device: cuda:0 layer3.2.bn2.bias
+input device: cuda:0 layer3.2.conv3.weight
+input device: cuda:0 layer3.2.bn3.weight
+input device: cuda:0 layer3.2.bn3.bias
+input device: cuda:0 layer3.3.conv1.weight
+input device: cuda:0 layer3.3.bn1.weight
+input device: cuda:0 layer3.3.bn1.bias
+input device: cuda:0 layer3.3.conv2.weight
+input device: cuda:0 layer3.3.bn2.weight
+input device: cuda:0 layer3.3.bn2.bias
+input device: cuda:0 layer3.3.conv3.weight
+input device: cuda:0 layer3.3.bn3.weight
+input device: cuda:0 layer3.3.bn3.bias
+input device: cuda:0 layer3.4.conv1.weight
+input device: cuda:0 layer3.4.bn1.weight
+input device: cuda:0 layer3.4.bn1.bias
+input device: cuda:0 layer3.4.conv2.weight
+input device: cuda:0 layer3.4.bn2.weight
+input device: cuda:0 layer3.4.bn2.bias
+input device: cuda:0 layer3.4.conv3.weight
+input device: cuda:0 layer3.4.bn3.weight
+input device: cuda:0 layer3.4.bn3.bias
+input device: cuda:0 layer3.5.conv1.weight
+input device: cuda:0 layer3.5.bn1.weight
+input device: cuda:0 layer3.5.bn1.bias
+input device: cuda:0 layer3.5.conv2.weight
+input device: cuda:0 layer3.5.bn2.weight
+input device: cuda:0 layer3.5.bn2.bias
+input device: cuda:0 layer3.5.conv3.weight
+input device: cuda:0 layer3.5.bn3.weight
+input device: cuda:0 layer3.5.bn3.bias
+input device: cuda:0 layer4.0.conv1.weight
+input device: cuda:0 layer4.0.bn1.weight
+input device: cuda:0 layer4.0.bn1.bias
+input device: cuda:0 layer4.0.conv2.weight
+input device: cuda:0 layer4.0.bn2.weight
+input device: cuda:0 layer4.0.bn2.bias
+input device: cuda:0 layer4.0.conv3.weight
+input device: cuda:0 layer4.0.bn3.weight
+input device: cuda:0 layer4.0.bn3.bias
+input device: cuda:0 layer4.0.downsample.0.weight
+input device: cuda:0 layer4.0.downsample.1.weight
+input device: cuda:0 layer4.0.downsample.1.bias
+input device: cuda:0 layer4.1.conv1.weight
+input device: cuda:0 layer4.1.bn1.weight
+input device: cuda:0 layer4.1.bn1.bias
+input device: cuda:0 layer4.1.conv2.weight
+input device: cuda:0 layer4.1.bn2.weight
+input device: cuda:0 layer4.1.bn2.bias
+input device: cuda:0 layer4.1.conv3.weight
+input device: cuda:0 layer4.1.bn3.weight
+input device: cuda:0 layer4.1.bn3.bias
+input device: cuda:0 layer4.2.conv1.weight
+input device: cuda:0 layer4.2.bn1.weight
+input device: cuda:0 layer4.2.bn1.bias
+input device: cuda:0 layer4.2.conv2.weight
+input device: cuda:0 layer4.2.bn2.weight
+input device: cuda:0 layer4.2.bn2.bias
+input device: cuda:0 layer4.2.conv3.weight
+input device: cuda:0 layer4.2.bn3.weight
+input device: cuda:0 layer4.2.bn3.bias
+Module_name: conv1 | Param_name: weight | Device: cuda:0 PASS-------------------
+input_device: cuda:0 | param_device: cuda:0
+input device: cuda:0 | param device: cuda:0
+input device: cuda:2 conv1.weight
+input device: cuda:2 bn1.weight
+input device: cuda:2 bn1.bias
+input device: cuda:2 layer1.0.conv1.weight
+input device: cuda:2 layer1.0.bn1.weight
+input device: cuda:2 layer1.0.bn1.bias
+input device: cuda:2 layer1.0.conv2.weight
+input device: cuda:2 layer1.0.bn2.weight
+input device: cuda:2 layer1.0.bn2.bias
+input device: cuda:2 layer1.0.conv3.weight
+input device: cuda:2 layer1.0.bn3.weight
+input device: cuda:2 layer1.0.bn3.bias
+input device: cuda:2 layer1.0.downsample.0.weight
+input device: cuda:2 layer1.0.downsample.1.weight
+input device: cuda:2 layer1.0.downsample.1.bias
+input device: cuda:2 layer1.1.conv1.weight
+input device: cuda:2 layer1.1.bn1.weight
+input device: cuda:2 layer1.1.bn1.bias
+input device: cuda:2 layer1.1.conv2.weight
+input device: cuda:2 layer1.1.bn2.weight
+input device: cuda:2 layer1.1.bn2.bias
+input device: cuda:2 layer1.1.conv3.weight
+input device: cuda:2 layer1.1.bn3.weight
+input device: cuda:2 layer1.1.bn3.bias
+input device: cuda:2 layer1.2.conv1.weight
+input device: cuda:2 layer1.2.bn1.weight
+input device: cuda:2 layer1.2.bn1.bias
+input device: cuda:2 layer1.2.conv2.weight
+input device: cuda:2 layer1.2.bn2.weight
+input device: cuda:2 layer1.2.bn2.bias
+input device: cuda:2 layer1.2.conv3.weight
+input device: cuda:2 layer1.2.bn3.weight
+input device: cuda:2 layer1.2.bn3.bias
+input device: cuda:2 layer2.0.conv1.weight
+input device: cuda:2 layer2.0.bn1.weight
+input device: cuda:2 layer2.0.bn1.bias
+input device: cuda:2 layer2.0.conv2.weight
+input device: cuda:2 layer2.0.bn2.weight
+input device: cuda:2 layer2.0.bn2.bias
+input device: cuda:2 layer2.0.conv3.weight
+input device: cuda:2 layer2.0.bn3.weight
+input device: cuda:2 layer2.0.bn3.bias
+input device: cuda:2 layer2.0.downsample.0.weight
+input device: cuda:2 layer2.0.downsample.1.weight
+input device: cuda:2 layer2.0.downsample.1.bias
+input device: cuda:2 layer2.1.conv1.weight
+input device: cuda:2 layer2.1.bn1.weight
+input device: cuda:2 layer2.1.bn1.bias
+input device: cuda:2 layer2.1.conv2.weight
+input device: cuda:2 layer2.1.bn2.weight
+input device: cuda:2 layer2.1.bn2.bias
+input device: cuda:2 layer2.1.conv3.weight
+input device: cuda:2 layer2.1.bn3.weight
+input device: cuda:2 layer2.1.bn3.bias
+input device: cuda:2 layer2.2.conv1.weight
+input device: cuda:2 layer2.2.bn1.weight
+input device: cuda:2 layer2.2.bn1.bias
+input device: cuda:2 layer2.2.conv2.weight
+input device: cuda:2 layer2.2.bn2.weight
+input device: cuda:2 layer2.2.bn2.bias
+input device: cuda:2 layer2.2.conv3.weight
+input device: cuda:2 layer2.2.bn3.weight
+input device: cuda:2 layer2.2.bn3.bias
+input device: cuda:2 layer2.3.conv1.weight
+input device: cuda:2 layer2.3.bn1.weight
+input device: cuda:2 layer2.3.bn1.bias
+input device: cuda:2 layer2.3.conv2.weight
+input device: cuda:2 layer2.3.bn2.weight
+input device: cuda:2 layer2.3.bn2.bias
+input device: cuda:2 layer2.3.conv3.weight
+input device: cuda:2 layer2.3.bn3.weight
+input device: cuda:2 layer2.3.bn3.bias
+input device: cuda:2 layer3.0.conv1.weight
+input device: cuda:2 layer3.0.bn1.weight
+input device: cuda:2 layer3.0.bn1.bias
+input device: cuda:2 layer3.0.conv2.weight
+input device: cuda:2 layer3.0.bn2.weight
+input device: cuda:2 layer3.0.bn2.bias
+input device: cuda:2 layer3.0.conv3.weight
+input device: cuda:2 layer3.0.bn3.weight
+input device: cuda:2 layer3.0.bn3.bias
+input device: cuda:2 layer3.0.downsample.0.weight
+input device: cuda:2 layer3.0.downsample.1.weight
+input device: cuda:2 layer3.0.downsample.1.bias
+input device: cuda:2 layer3.1.conv1.weight
+input device: cuda:2 layer3.1.bn1.weight
+input device: cuda:2 layer3.1.bn1.bias
+input device: cuda:2 layer3.1.conv2.weight
+input device: cuda:2 layer3.1.bn2.weight
+input device: cuda:2 layer3.1.bn2.bias
+input device: cuda:2 layer3.1.conv3.weight
+input device: cuda:2 layer3.1.bn3.weight
+input device: cuda:2 layer3.1.bn3.bias
+input device: cuda:2 layer3.2.conv1.weight
+input device: cuda:2 layer3.2.bn1.weight
+input device: cuda:2 layer3.2.bn1.bias
+input device: cuda:2 layer3.2.conv2.weight
+input device: cuda:2 layer3.2.bn2.weight
+input device: cuda:2 layer3.2.bn2.bias
+input device: cuda:2 layer3.2.conv3.weight
+input device: cuda:2 layer3.2.bn3.weight
+input device: cuda:2 layer3.2.bn3.bias
+input device: cuda:2 layer3.3.conv1.weight
+input device: cuda:2 layer3.3.bn1.weight
+input device: cuda:2 layer3.3.bn1.bias
+input device: cuda:2 layer3.3.conv2.weight
+input device: cuda:2 layer3.3.bn2.weight
+input device: cuda:2 layer3.3.bn2.bias
+input device: cuda:2 layer3.3.conv3.weight
+input device: cuda:2 layer3.3.bn3.weight
+input device: cuda:2 layer3.3.bn3.bias
+input device: cuda:2 layer3.4.conv1.weight
+input device: cuda:2 layer3.4.bn1.weight
+input device: cuda:2 layer3.4.bn1.bias
+input device: cuda:2 layer3.4.conv2.weight
+input device: cuda:2 layer3.4.bn2.weight
+input device: cuda:2 layer3.4.bn2.bias
+input device: cuda:2 layer3.4.conv3.weight
+input device: cuda:2 layer3.4.bn3.weight
+input device: cuda:2 layer3.4.bn3.bias
+input device: cuda:2 layer3.5.conv1.weight
+input device: cuda:2 layer3.5.bn1.weight
+input device: cuda:2 layer3.5.bn1.bias
+input device: cuda:2 layer3.5.conv2.weight
+input device: cuda:2 layer3.5.bn2.weight
+input device: cuda:2 layer3.5.bn2.bias
+input device: cuda:2 layer3.5.conv3.weight
+input device: cuda:2 layer3.5.bn3.weight
+input device: cuda:2 layer3.5.bn3.bias
+input device: cuda:2 layer4.0.conv1.weight
+input device: cuda:2 layer4.0.bn1.weight
+input device: cuda:2 layer4.0.bn1.bias
+input device: cuda:2 layer4.0.conv2.weight
+input device: cuda:2 layer4.0.bn2.weight
+input device: cuda:2 layer4.0.bn2.bias
+input device: cuda:2 layer4.0.conv3.weight
+input device: cuda:2 layer4.0.bn3.weight
+input device: cuda:2 layer4.0.bn3.bias
+input device: cuda:2 layer4.0.downsample.0.weight
+input device: cuda:2 layer4.0.downsample.1.weight
+input device: cuda:2 layer4.0.downsample.1.bias
+input device: cuda:2 layer4.1.conv1.weight
+input device: cuda:2 layer4.1.bn1.weight
+input device: cuda:2 layer4.1.bn1.bias
+input device: cuda:2 layer4.1.conv2.weight
+input device: cuda:2 layer4.1.bn2.weight
+input device: cuda:2 layer4.1.bn2.bias
+input device: cuda:2 layer4.1.conv3.weight
+input device: cuda:2 layer4.1.bn3.weight
+input device: cuda:2 layer4.1.bn3.bias
+input device: cuda:2 layer4.2.conv1.weight
+input device: cuda:2 layer4.2.bn1.weight
+input device: cuda:2 layer4.2.bn1.bias
+input device: cuda:2 layer4.2.conv2.weight
+input device: cuda:2 layer4.2.bn2.weight
+input device: cuda:2 layer4.2.bn2.bias
+input device: cuda:2 layer4.2.conv3.weight
+input device: cuda:2 layer4.2.bn3.weight
+input device: cuda:2 layer4.2.bn3.bias
+Module_name: conv1 | Param_name: weight | Device: cuda:2 PASS-------------------
+input_device: cuda:2 | param_device: cuda:2
+input device: cuda:2 | param device: cuda:2
 Traceback (most recent call last):
   File "main_shadow.py", line 154, in <module>
     main()
@@ -387,11 +558,25 @@ Traceback (most recent call last):
     output = module(*input, **kwargs)
   File "/home/leizhou/anaconda3/envs/pt10/lib/python3.6/site-packages/torch/nn/modules/module.py", line 477, in __call__
     result = self.forward(*input, **kwargs)
-  File "/home/leizhou/CVPR2019/vid_cls/lib/models.py", line 231, in forward
-    self._cast_params()
-  File "/home/leizhou/CVPR2019/vid_cls/lib/models.py", line 165, in _cast_params
-    "| stereo leaf/req_grad", '/'.join([str(param_stereo[1].is_leaf), str(param_stereo[1].requires_grad)]), \
-RuntimeError: output_nr_ == 0 ASSERT FAILED at /opt/conda/conda-bld/pytorch-nightly_1539507584455/work/torch/csrc/autograd/variable.cpp:194, please report a bug to PyTorch.
+  File "/home/leizhou/CVPR2019/vid_cls/lib/models.py", line 218, in forward
+    out2 = self.shadow_model(input[:,:,16:,...])
+  File "/home/leizhou/anaconda3/envs/pt10/lib/python3.6/site-packages/torch/nn/modules/module.py", line 477, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/leizhou/CVPR2019/vid_cls/lib/networks/shadownet.py", line 93, in forward
+    x = self.layer1(x)
+  File "/home/leizhou/anaconda3/envs/pt10/lib/python3.6/site-packages/torch/nn/modules/module.py", line 477, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/leizhou/anaconda3/envs/pt10/lib/python3.6/site-packages/torch/nn/modules/container.py", line 92, in forward
+    input = module(input)
+  File "/home/leizhou/anaconda3/envs/pt10/lib/python3.6/site-packages/torch/nn/modules/module.py", line 477, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/leizhou/CVPR2019/vid_cls/lib/networks/shadownet.py", line 32, in forward
+    out = self.conv1(x)
+  File "/home/leizhou/anaconda3/envs/pt10/lib/python3.6/site-packages/torch/nn/modules/module.py", line 477, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/leizhou/CVPR2019/vid_cls/lib/op_wrapper/conv.py", line 99, in forward
+    self.padding, self.dilation, self.groups)
+TypeError: conv3d(): argument 'weight' (position 2) must be Tensor, not NoneType
 
 If you suspect this is an IPython bug, please report it at:
     https://github.com/ipython/ipython/issues

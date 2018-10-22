@@ -96,7 +96,7 @@ class VideoDataSet(data.Dataset):
                 samples = self.dense_sampler(average_duration, self.t_length, self.t_stride)
                 samples = [sample + offsets[i] for sample in samples]
                 frames.extend(samples)
-            return frames
+            return {"dense": frames}
         elif self.style == "UnevenDense":
             sparse_frames = []
             dense_frames = []
@@ -128,7 +128,7 @@ class VideoDataSet(data.Dataset):
         samples = []
         for i in range(self.t_length):
             samples.append(offset + i * self.t_stride + 1)
-        return samples
+        return {"dense": samples}
 
     def _get_test_indices(self, record):
         """
@@ -148,38 +148,39 @@ class VideoDataSet(data.Dataset):
         for i in range(self.num_segments):
             for j in range(self.t_length):
                 frames.append(offsets[i] + j)
-        return frames
+        return {"dense": frames}
 
     def __getitem__(self, index):
         record = self.video_list[index]
 
         if self.phase == "Train":
             indices = self._sample_indices(record)
+            return self.get(record, indices, self.phase)
         elif self.phase == "Val":
             indices = self._get_val_indices(record)
+            return self.get(record, indices, self.phase)
         elif self.phase == "Test":
             indices = self._get_test_indices(record)
+            return self.get(record, indices, self.phase)
         else:
             raise TypeError("Unsuported phase {}".format(self.phase))
-
-        return self.get(record, indices)
         # ipdb.set_trace()
         # return record.path, record.num_frames, indices # for debugging
 
-    def get(self, record, indices):
-        if self.style == "Dense":
-            assert(isinstance(indices, list)), "In Dense style, indices should be a list"
+    def get(self, record, indices, phase):
+        # dense process data
+        def dense_process_data():
             images = list()
-            for ind in indices:
+            for ind in indices['dense']:
                 ptr = int(ind)
                 if ptr <= record.num_frames:
                     imgs = self._load_image(record.path, ptr)
                 else:
                     imgs = self._load_image(record.path, record.num_frames)
                 images.extend(imgs)
-            process_data = self.transform(images)
-        elif self.style == "UnevenDense":
-            assert(isinstance(indices, dict)), "In UnevenDense style, indices should be a dictionary"
+            return self.transform(images)
+        # unevendense process data
+        def unevendense_process_data():
             dense_images = list()
             sparse_images = list()
             for ind in indices['dense']:
@@ -198,7 +199,14 @@ class VideoDataSet(data.Dataset):
                 sparse_images.extend(imgs)
 
             images = dense_images + sparse_images
-            process_data = self.transform(images)
+            return self.transform(images)
+        if phase == "Train":
+            if self.style == "Dense":
+                process_data = dense_process_data()
+            elif self.style == "UnevenDense":
+                process_data = unevendense_process_data()
+        elif phase in ("Val", "Test"):
+            process_data = dense_process_data()
         return process_data, record.label
 
     def __len__(self):

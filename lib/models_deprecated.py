@@ -93,7 +93,8 @@ class VideoShadowModule(nn.Module):
         self.pretrained_model = pretrained_model
 
         self._prepare_base_model(base_model_name)
-        self.shadow_model_name = base_model_name.split('_')[0] + '_shadow'
+        shadow_model_name = base_model_name.split('_')[0] + '_shadow'
+        self._prepare_shadow_model(shadow_model_name)
 
         if not self.before_softmax:
             self.softmax = nn.Softmax()
@@ -140,48 +141,100 @@ class VideoShadowModule(nn.Module):
             # print("load classifier")
             # self.classifier.load_state_dict(classifier_dict)
 
-    def _prepare_shadow_model(self):
-        # shadow model (currently only support resnet50_shadow)
-        if "resnet" in self.shadow_model_name:
-            self.shadow_model = eval(self.shadow_model_name)(feat=True)
+    def _prepare_shadow_model(self, shadow_model_name):
+
+        # base model (currently only support resnet50_shadow)
+        if "resnet" in shadow_model_name:
+            self.shadow_model = eval(shadow_model_name)(feat=True)
         else:
-            raise ValueError('Unknown shadow model: {}'.format())
+            raise ValueError('Unknown shadow proto model: {}'.format())
 
-    def _cast_shadow(self):
-        shadow_modules_dict = dict(self.shadow_model.named_modules())
-        shadow_module_names = shadow_modules_dict.keys()
+    # def _cast_params(self):
+    #     for param_stereo, param_shadow in zip(self.base_model.named_parameters(), self.shadow_model.named_parameters()):
+    #         # print("<--casting {}--> device: {}".format(param_stereo[0], param_stereo[1].device))
+    #         # if param_stereo[0] == "conv1.weight":
+    #             # ipdb.set_trace()
+    #             # pass
+    #         # print(param_stereo[1].is_leaf)
+    #         # print(param_stereo[1].requires_grad)
+    #         # print(param_shadow[1].is_leaf)
+    #         # print(param_shadow[1].requires_grad)
+    #         # print(param_stereo[1].device)
+    #         # print(param_shadow[1].device)
+    #         # print("Param Name {}".format(param_stereo[0]), \
+    #         #       "| stereo leaf/req_grad", '/'.join([str(param_stereo[1].is_leaf), str(param_stereo[1].requires_grad)]), \
+    #         #       "| shadow leaf/req_grad", '/'.join([str(param_shadow[1].is_leaf), str(param_shadow[1].requires_grad)]), \
+    #         #       "| param device", param_stereo[1].device, param_shadow[1].device)
+    #         assert(param_stereo[0] == param_shadow[0]), "Name mismatch."
+    #         stereo_shape = param_stereo[1].shape
+    #         shadow_shape = param_shadow[1].shape
+    #         # with same shape, just copy
+    #         if stereo_shape == shadow_shape:
+    #             try:
+    #                 param_shadow[1].copy_(param_stereo[1])
+    #             except Exception as e:
+    #                 print("Error message: {}\n".format(e))
+    #                 # param_shadow[1].copy_(param_stereo[1])
+    #         elif param_stereo[1].dim() == param_shadow[1].dim() == 5:
+    #             assert(stereo_shape[:2] == shadow_shape[:2] and stereo_shape[3:] == shadow_shape[3:]), \
+    #                     "Channel number and spatial dimension must match each other."
+    #             assert(shadow_shape[2] == 1), \
+    #                     "Shadow net conv weight parameters time dimension must be 1."
+    #             try:
+    #                 param_shadow[1].copy_(param_stereo[1].sum(dim=2, keepdim=True))
+    #             except Exception as e:
+    #                 print("Error message: {}\n".format(e))
+    #         else:
+    #             raise Exception("Wrong param pair {0} (stereo: {1}; shadow: {2})".format(param_stereo[0], 
+    #                 stereo_shape, shadow_shape))
+    #         # print("<--casted {}--> device: {}".format(param_stereo[0], param_stereo[1].device))
 
-        # cast parameters
-        for param_base in self.base_model.named_parameters():
-            name = param_base[0]
-            param = param_base[1]
-            _items = name.split('.')
-            module_name = '.'.join(_items[:-1])
-            param_name = _items[-1]
-            assert(param_name in ('weight', 'bias')), "parameter type must be weight or bias"
-            assert(module_name in shadow_module_names),"Name not in shadow_module_names"
-            # casting
-            shadow_module = shadow_modules_dict[module_name]
-            if param.dim() == 5:
-                param = param.sum(dim=2, keepdim=True)
-            assert(param.shape == shadow_module.shapes[param_name]), "param shape mismatch"
-            shadow_module.register_nonleaf_parameter(param_name, param)
+    def _cast_params(self):
+        for param_stereo, param_shadow in zip(self.base_model.named_parameters(), self.shadow_model.named_parameters()):
+            assert(param_stereo[0] == param_shadow[0]), "Name mismatch."
+            stereo_shape = param_stereo[1].shape
+            shadow_shape = param_shadow[1].shape
+            # with same shape, just copy
+            if stereo_shape == shadow_shape:
+                try:
+                    param_shadow[1].copy_(param_stereo[1])
+                except Exception as e:
+                    print("Error message: {}\n".format(e))
+                    # param_shadow[1].copy_(param_stereo[1])
+            elif param_stereo[1].dim() == param_shadow[1].dim() == 5:
+                assert(stereo_shape[:2] == shadow_shape[:2] and stereo_shape[3:] == shadow_shape[3:]), \
+                        "Channel number and spatial dimension must match each other."
+                assert(shadow_shape[2] == 1), \
+                        "Shadow net conv weight parameters time dimension must be 1."
+                try:
+                    param_shadow[1].copy_(param_stereo[1].sum(dim=2, keepdim=True))
+                except Exception as e:
+                    print("Error message: {}\n".format(e))
+            else:
+                raise Exception("Wrong param pair {0} (stereo: {1}; shadow: {2})".format(param_stereo[0], 
+                    stereo_shape, shadow_shape))
+            # print("<--casted {}--> device: {}".format(param_stereo[0], param_stereo[1].device))
 
-        # cast buffers
-        for buffer_base in self.base_model.named_buffers():
-            name = buffer_base[0]
-            buffer = buffer_base[1]
-            _items = name.split('.')
-            module_name = '.'.join(_items[:-1])
-            buffer_name = _items[-1]
-            assert(buffer_name in ('running_mean', 'running_var', 'num_batches_tracked')), "buffer type constrain"
-            assert(module_name in shadow_module_names), "Name not in shadow_module_names"
-            # casting
-            shadow_module = shadow_modules_dict[module_name]
-            # if shadow_module.shapes[buffer_name] == :
-                # print(buffer_name, buffer.shape, shadow_module.shapes[buffer_name])
-            # assert(buffer.shape == shadow_module.shapes[buffer_name]), "buffer shape mismatch"
-            shadow_module.register_buffer(buffer_name, buffer)
+    def _copy_buffers_to_shadow(self):
+        # print("copying buffers to shadow.")
+        for buffer_stereo, buffer_shadow in zip(self.base_model.named_buffers(), self.shadow_model.named_buffers()):
+            assert(buffer_stereo[0] == buffer_shadow[0]), "Name mismatch."
+            stereo_shape = buffer_stereo[1].shape
+            shadow_shape = buffer_shadow[1].shape
+            # with same shape, just copy
+            assert(stereo_shape == shadow_shape), "buffer shape must be the same."
+            buffer_shadow[1].copy_(buffer_stereo[1])
+
+    def _copy_buffers_to_stereo(self):
+        # print("copying buffers to stereo.")
+        for buffer_stereo, buffer_shadow in zip(self.base_model.named_buffers(), self.shadow_model.named_buffers()):
+            assert(buffer_stereo[0] == buffer_shadow[0]), "Name mismatch."
+            stereo_shape = buffer_stereo[1].shape
+            shadow_shape = buffer_shadow[1].shape
+            # with same shape, just copy
+            assert(stereo_shape == shadow_shape), "buffer shape must be the same."
+            buffer_stereo[1].copy_(buffer_shadow[1])
+            # buffer_shadow[1].copy_(buffer_stereo[1])
 
     def _aggregate(self, dense_pred, sparse_pred):
         assert(dense_pred.dim() == 2 and sparse_pred.dim() == 3), "Prediction dimension error."
@@ -192,18 +245,24 @@ class VideoShadowModule(nn.Module):
         return out
 
     def forward(self, input):
-        base_input = input[:,:,:16,...]
         # Infer 3D network
-        out = self.base_model(base_input)
-        if input.shape[2] > 16:
-            self._prepare_shadow_model()
-            shadow_input = input[:,:,16:,...]
-            # Cast Shadow
-            self._cast_shadow()
-            # Infer TSN
-            out_shadow = self.shadow_model(shadow_input)
-            # Aggregate across segments
-            out = self._aggregate(out, out_shadow)
+        # ipdb.set_trace()
+        out1 = self.base_model(input[:,:,:16,...])
+        # print("conv1 weight device", self.base_model.conv1.weight.device)
+        # Cast Shadow
+        # ipdb.set_trace()
+        # torch.cuda.synchronize()
+        # ipdb.set_trace()
+        print("first casting...")
+        self._cast_params()
+        # ipdb.set_trace()
+        self._copy_buffers_to_shadow()
+        # Infer TSN
+        out2 = self.shadow_model(input[:,:,16:,...])
+        # Copy buffers back
+        # self._copy_buffers_to_stereo()
+        # Aggregate across segments
+        out = self._aggregate(out1, out2)
         out = self.classifier(out)
         if not self.before_softmax:
             out = self.softmax(out)

@@ -65,17 +65,20 @@ os.environ['CUDA_VISIBLE_DEVICES']='3,5'
 class TestModel(nn.Module):
 	def __init__(self):
 		super(TestModel, self).__init__()
-		self.layer1 = nn.Conv2d(3, 64, 3)
-		self.layer2 = nn.Conv2d(64, 128, 3)
+		self.layer1 = nn.Conv2d(3, 64, 3, bias=False)
+		self.layer2 = nn.Conv2d(64, 128, 3, bias=False)
+		self.layer3 = nn.Sequential(nn.Conv2d(128,128,3,bias=False), nn.Conv2d(128,2,3, bias=False))
 	def forward(self, x):
 		print("layer1", self.layer1.weight.is_leaf, self.layer1.weight.requires_grad)
 		print("layer2", self.layer2.weight.is_leaf, self.layer2.weight.requires_grad)
 		out = self.layer1(x)
 		out = self.layer2(out)
+		out = self.layer3(out)
 		return out
 
 org_model = TestModel()
 model = torch.nn.DataParallel(org_model).cuda()
+ipdb.set_trace()
 
 x = torch.ones(8, 3, 56, 56)
 out = model(x)

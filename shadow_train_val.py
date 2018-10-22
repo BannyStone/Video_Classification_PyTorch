@@ -27,7 +27,7 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq):
 
       # compute output
       output = model(input)
-      ipdb.set_trace()
+      # ipdb.set_trace()
       loss = criterion(output, target)
 
       # measure accuracy and record loss
@@ -68,6 +68,7 @@ def validate(val_loader, model, criterion, print_freq, epoch, logger=None):
     model.eval()
 
     with torch.no_grad():
+      # print("pass")
         end = time.time()
         for i, (input, target) in enumerate(val_loader):
           # input = input.cuda(non_blocking=True) # comment when using dataparallel

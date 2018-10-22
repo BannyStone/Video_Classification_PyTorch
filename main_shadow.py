@@ -127,7 +127,7 @@ def main():
 
     # ipdb.set_trace()
 
-    # validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
+    validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)

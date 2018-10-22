@@ -93,7 +93,8 @@ class VideoShadowModule(nn.Module):
         self.pretrained_model = pretrained_model
 
         self._prepare_base_model(base_model_name)
-        self.shadow_model_name = base_model_name.split('_')[0] + '_shadow'
+        shadow_model_name = base_model_name.split('_')[0] + '_shadow'
+        self._prepare_shadow_model(shadow_model_name)
 
         if not self.before_softmax:
             self.softmax = nn.Softmax()
@@ -140,18 +141,20 @@ class VideoShadowModule(nn.Module):
             # print("load classifier")
             # self.classifier.load_state_dict(classifier_dict)
 
-    def _prepare_shadow_model(self):
-        # shadow model (currently only support resnet50_shadow)
-        if "resnet" in self.shadow_model_name:
-            self.shadow_model = eval(self.shadow_model_name)(feat=True)
+    def _prepare_shadow_model(self, shadow_model_name):
+
+        # base model (currently only support resnet50_shadow)
+        if "resnet" in shadow_model_name:
+            self.shadow_model = eval(shadow_model_name)(feat=True)
         else:
             raise ValueError('Unknown shadow model: {}'.format())
 
-    def _cast_shadow(self):
+    def _cast_shadow(self, input):
         shadow_modules_dict = dict(self.shadow_model.named_modules())
         shadow_module_names = shadow_modules_dict.keys()
-
         # cast parameters
+        # for p in self.base_model.named_parameters():
+        #     print("input device: {}".format(input.device), p[0])
         for param_base in self.base_model.named_parameters():
             name = param_base[0]
             param = param_base[1]
@@ -166,22 +169,29 @@ class VideoShadowModule(nn.Module):
                 param = param.sum(dim=2, keepdim=True)
             assert(param.shape == shadow_module.shapes[param_name]), "param shape mismatch"
             shadow_module.register_nonleaf_parameter(param_name, param)
-
+            # if module_name == "conv1" and param_name == "weight":
+            # assert(input.device == eval("shadow_module.{}.device".format(param_name))), "Error1--------------"
+            # assert(input.device == eval("self.shadow_model.{}.{}.device".format(module_name, param_name))), "Error2---------"
+                # print("Module_name: {} | Param_name: {} | Device: {} PASS-------------------".format(module_name, param_name, input.device))
+                # break
+        # print("input_device: {} | param_device: {}".format(input.device, self.shadow_model.conv1.weight.device))
+        # print(input.device, id(self.shadow_model.conv1.weight))
+        # assert(input.device == eval("self.shadow_model.{}.{}.device".format('conv1', 'weight'))), "Error2+---------"
+        
+            # print("Chekc:", eval("id(shadow_module.{})".format(param_name)) == id(param))
         # cast buffers
-        for buffer_base in self.base_model.named_buffers():
-            name = buffer_base[0]
-            buffer = buffer_base[1]
-            _items = name.split('.')
-            module_name = '.'.join(_items[:-1])
-            buffer_name = _items[-1]
-            assert(buffer_name in ('running_mean', 'running_var', 'num_batches_tracked')), "buffer type constrain"
-            assert(module_name in shadow_module_names), "Name not in shadow_module_names"
-            # casting
-            shadow_module = shadow_modules_dict[module_name]
-            # if shadow_module.shapes[buffer_name] == :
-                # print(buffer_name, buffer.shape, shadow_module.shapes[buffer_name])
-            # assert(buffer.shape == shadow_module.shapes[buffer_name]), "buffer shape mismatch"
-            shadow_module.register_buffer(buffer_name, buffer)
+        # for buffer_base in self.base_model.named_buffers():
+        #     name = buffer_base[0]
+        #     buffer = buffer_base[1]
+        #     _items = name.split('.')
+        #     module_name = '.'.join(_items[:-1])
+        #     buffer_name = _items[-1]
+        #     assert(buffer_name in ('running_mean', 'running_var', 'num_batches_tracked')), "buffer type constrain"
+        #     assert(module_name in shadow_module_names), "Name not in shadow_module_names"
+        #     # casting
+        #     shadow_module = shadow_modules_dict[module_name]
+        #     # assert(buffer.shape == shadow_module.shapes[buffer_name]), "name :{} | {} shape mismatch: {}/{}".format(module_name, buffer_name, buffer.shape, shadow_module.shapes[buffer_name])
+        #     shadow_module.register_buffer(buffer_name, buffer)
 
     def _aggregate(self, dense_pred, sparse_pred):
         assert(dense_pred.dim() == 2 and sparse_pred.dim() == 3), "Prediction dimension error."
@@ -192,18 +202,16 @@ class VideoShadowModule(nn.Module):
         return out
 
     def forward(self, input):
-        base_input = input[:,:,:16,...]
         # Infer 3D network
-        out = self.base_model(base_input)
-        if input.shape[2] > 16:
-            self._prepare_shadow_model()
-            shadow_input = input[:,:,16:,...]
-            # Cast Shadow
-            self._cast_shadow()
-            # Infer TSN
-            out_shadow = self.shadow_model(shadow_input)
-            # Aggregate across segments
-            out = self._aggregate(out, out_shadow)
+        out1 = self.base_model(input[:,:,:16,...])
+        # Cast Shadow
+        self._cast_shadow(input)
+        # Infer TSN
+        out2 = self.shadow_model(input[:,:,16:,...])
+        # Copy buffers back
+        # self._copy_buffers_to_stereo()
+        # Aggregate across segments
+        out = self._aggregate(out1, out2)
         out = self.classifier(out)
         if not self.before_softmax:
             out = self.softmax(out)
