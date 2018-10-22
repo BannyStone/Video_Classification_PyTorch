@@ -207,7 +207,6 @@ class VideoShadowModule(nn.Module):
         out = self.classifier(out)
         if not self.before_softmax:
             out = self.softmax(out)
-        # ipdb.set_trace()
 
         return out
 

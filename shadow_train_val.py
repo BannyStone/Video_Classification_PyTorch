@@ -27,7 +27,6 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq):
 
       # compute output
       output = model(input)
-      # ipdb.set_trace()
       loss = criterion(output, target)
 
       # measure accuracy and record loss
@@ -40,7 +39,6 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq):
       optimizer.zero_grad()
       loss.backward()
       optimizer.step()
-      # model._copy_buffers_to_stereo()
 
       # measure elapsed time
       batch_time.update(time.time() - end)
