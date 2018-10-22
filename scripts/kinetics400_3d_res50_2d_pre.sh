@@ -10,10 +10,11 @@ data/kinetics400/kinetics_val_list.txt \
 --t_length 16 \
 --t_stride 4 \
 --pretrained \
---epochs 70 \
+--epochs 95 \
 --batch-size 64 \
 --lr 0.001 \
---lr_steps 30 50 60 \
+--lr_steps 40 80 90 \
 --workers 32 \
 --pretrained_model models/resnet50_2d_pre.pth \
--ef 1
+-ef 2 \
+--resume output/kinetics400_resnet50_3d_3D_length16_stride4_dropout0.2_2dpretrained/checkpoint_60epoch.pth \
