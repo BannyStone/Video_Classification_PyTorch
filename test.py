@@ -30,6 +30,7 @@ parser.add_argument('--t_length', type=int, default=8)
 parser.add_argument('--t_stride', type=int, default=8)
 parser.add_argument('--crop_fusion_type', type=str, default='avg',
                     choices=['avg', 'max', 'topk'])
+parser.add_argument('--image_tmpl', type=str)
 parser.add_argument('--dropout', type=float, default=0.2)
 parser.add_argument('-j', '--workers', default=32, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
@@ -89,7 +90,7 @@ def main():
         t_length=args.t_length,
         t_stride=args.t_stride,
         num_segments=args.num_segments,
-        image_tmpl="image_{:06d}.jpg",
+        image_tmpl=args.image_tmpl,
         transform=test_transform,
         phase="Test")
     test_loader = torch.utils.data.DataLoader(

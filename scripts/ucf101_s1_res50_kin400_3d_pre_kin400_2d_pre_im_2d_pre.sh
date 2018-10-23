@@ -5,7 +5,7 @@ ucf101 \
 data/ucf101/ucf101_train_split1_list.txt \
 data/ucf101/ucf101_val_split1_list.txt \
 --arch resnet50_3d \
---dro 0.8 \
+--dro 0.4 \
 --mode 3D \
 --t_length 16 \
 --t_stride 4 \
@@ -13,7 +13,7 @@ data/ucf101/ucf101_val_split1_list.txt \
 --pretrained_model models/kinetics400_pre_3d_pre_2d/kinetics400_pre_3d_pre_2d.pth \
 --epochs 40 \
 --batch-size 56 \
---lr 0.01 \
+--lr 0.001 \
 --lr_steps 15 25 35 \
 --workers 16 \
 --image_tmpl img_{:05d}.jpg \
