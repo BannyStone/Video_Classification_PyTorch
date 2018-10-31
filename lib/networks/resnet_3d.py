@@ -305,12 +305,15 @@ class ResNet3D(nn.Module):
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         if not self.feat:
+            print("WARNING!!!!!!!")
             x = self.fc(x)
 
         return x
 
 
 def part_state_dict(state_dict, model_dict):
+    import ipdb
+    # ipdb.set_trace()
     pretrained_dict = {k: v for k, v in state_dict.items() if k in model_dict}
     pretrained_dict = inflate_state_dict(pretrained_dict, model_dict)
     model_dict.update(pretrained_dict)
@@ -333,6 +336,7 @@ def inflate_state_dict(pretrained_dict, model_dict):
                 pretrained_dict[k] = pretrained_dict[k].expand_as(model_dict[k]) / t_length
             assert(pretrained_dict[k].size() == model_dict[k].size()), \
                    "After inflation, model shape should match."
+
     return pretrained_dict
 
 def resnet18_2d(pretrained=False, feat=False, **kwargs):

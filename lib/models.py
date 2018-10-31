@@ -126,8 +126,10 @@ class VideoShadowModule(nn.Module):
         # classifier: (dropout) + fc
         if self.dropout == 0:
             self.classifier = nn.Linear(self.base_model.feat_dim, self.num_class)
+            # self.shadow_classifier = nn.Linear(self.base_model.feat_dim, self.num_class)
         elif self.dropout > 0:
             self.classifier = nn.Sequential(nn.Dropout(self.dropout), nn.Linear(self.base_model.feat_dim, self.num_class))
+            # self.shadow_classifier = nn.Sequential(nn.Dropout(self.dropout), nn.Linear(self.base_model.feat_dim, self.num_class))
 
         # init classifier
         for m in self.classifier.modules():
@@ -162,15 +164,17 @@ class VideoShadowModule(nn.Module):
             assert(module_name in shadow_module_names),"Name not in shadow_module_names"
             # casting
             shadow_module = shadow_modules_dict[module_name]
-            if param.dim() == 5:
-                param = param.sum(dim=2, keepdim=True)
+            if param.dim() == 5 and param.shape[2] != 1:
+                param = param.sum(dim=2, keepdim=True) #.detach()
+            # else:
+            #     param = param #.detach()
             assert(param.shape == shadow_module.shapes[param_name]), "param shape mismatch"
             shadow_module.register_nonleaf_parameter(param_name, param)
 
         # cast buffers
         for buffer_base in self.base_model.named_buffers():
             name = buffer_base[0]
-            buffer = buffer_base[1]
+            buffer = buffer_base[1].detach().clone()
             _items = name.split('.')
             module_name = '.'.join(_items[:-1])
             buffer_name = _items[-1]
@@ -186,15 +190,25 @@ class VideoShadowModule(nn.Module):
     def _aggregate(self, dense_pred, sparse_pred):
         assert(dense_pred.dim() == 2 and sparse_pred.dim() == 3), "Prediction dimension error."
         dense_pred = dense_pred.view(dense_pred.shape[0], dense_pred.shape[1], 1)
-        out = torch.cat((dense_pred, sparse_pred), dim=2)
+        out = torch.cat((dense_pred, sparse_pred * 0.5), dim=2)
+        # out = dense_pred
+        # out = sparse_pred
         num_segments = out.shape[2]
+        # print("Num Segment: ", num_segments)
         out = out.sum(dim=2, keepdim=False).div(num_segments)
         return out
 
     def forward(self, input):
         base_input = input[:,:,:16,...]
         # Infer 3D network
-        out = self.base_model(base_input)
+        # print("<--device: {} | befor forward conv1.weight: {}-->\n".format(input.device, self.base_model.conv1.weight[:10,0,0,0,0]))
+        # print("<--device: {} | befor forward bn1.running_mean: {}-->\n".format(input.device, self.base_model.bn1.running_mean[:10]))
+        out_base = self.base_model(base_input)
+        out = self.classifier(out_base)
+        if not self.before_softmax:
+            out = self.softmax(out)
+        # print("<--device: {} | after forward conv1.weight: {}-->\n".format(input.device, self.base_model.conv1.weight[:10,0,0,0,0]))
+        # print("<--device: {} | after forward bn1.running_mean: {}-->\n".format(input.device, self.base_model.bn1.running_mean[:10]))
         if input.shape[2] > 16:
             self._prepare_shadow_model()
             shadow_input = input[:,:,16:,...]
@@ -203,16 +217,18 @@ class VideoShadowModule(nn.Module):
             # Infer TSN
             out_shadow = self.shadow_model(shadow_input)
             # Aggregate across segments
-            out = self._aggregate(out, out_shadow)
-        out = self.classifier(out)
-        if not self.before_softmax:
-            out = self.softmax(out)
-
-        return out
+            out_2 = self._aggregate(out_base, out_shadow)
+            out_2 = self.classifier(out_2)
+            if not self.before_softmax:
+                out_2 = self.softmax(out_2)
+            return out, out_2
+        else:
+            return out
 
     def get_augmentation(self):
         return torchvision.transforms.Compose([GroupMultiScaleCrop(input_size=224, scales=[1, .875, .75, .66]),
                                                    GroupRandomHorizontalFlip()])
+
 
 class TSN(nn.Module):
     """Temporal Segment Network

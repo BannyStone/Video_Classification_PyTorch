@@ -2,7 +2,10 @@ import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 
+import numpy as np
+
 import ipdb
+from IPython import embed
 # cudnn.benchmark = True
 
 # Bad
@@ -60,6 +63,7 @@ import ipdb
 # ipdb.set_trace()
 
 # data parallel debugging
+'''
 import os
 os.environ['CUDA_VISIBLE_DEVICES']='3,5'
 class TestModel(nn.Module):
@@ -82,3 +86,14 @@ ipdb.set_trace()
 
 x = torch.ones(8, 3, 56, 56)
 out = model(x)
+'''
+import os
+os.environ['CUDA_VISIBLE_DEVICES']='6,7'
+import torchvision.models as models
+network = models.resnet50(pretrained=True)
+network = nn.DataParallel(network).cuda()
+np.random.seed(12345)
+mat = (np.random.random_sample((2, 3, 224, 224)) - 0.5) * 2
+input = torch.from_numpy(mat).to(torch.float).cuda()
+output = network(input)
+embed()

@@ -11,10 +11,10 @@ data/ucf101/ucf101_val_split1_list.txt \
 --t_stride 4 \
 --pretrained \
 --pretrained_model models/kinetics400_pre_3d_pre_2d/kinetics400_pre_3d_pre_2d.pth \
---epochs 40 \
+--epochs 25 \
 --batch-size 56 \
 --lr 0.001 \
---lr_steps 15 25 35 \
+--lr_steps 10 20 \
 --workers 16 \
 --image_tmpl img_{:05d}.jpg \
--ef 4 \
+-ef 1 \

@@ -6,6 +6,7 @@ import os.path
 import numpy as np
 from numpy.random import randint
 
+import torch
 import ipdb
 
 class VideoRecord(object):
@@ -25,6 +26,16 @@ class VideoRecord(object):
     def label(self):
         return int(self._data[2])
 
+class VideoDebugDataSet(data.Dataset):
+    """
+    """
+    def __len__(self):
+        return 100
+
+    def __getitem__(self, index):
+        np.random.seed(12345)
+        input_tensor = (np.random.random_sample((3,18,224,224)) - 0.5) * 2
+        return torch.from_numpy(input_tensor).to(torch.float), 0
 
 class VideoDataSet(data.Dataset):
     def __init__(self, root_path, list_file, 
@@ -99,23 +110,52 @@ class VideoDataSet(data.Dataset):
             return {"dense": frames}
         elif self.style == "UnevenDense":
             sparse_frames = []
-            dense_frames = []
             average_duration = record.num_frames / self.num_segments
             offsets = [average_duration * i for i in range(self.num_segments)]
-            dense_seg = randint(self.num_segments)
+            dense_frames = self.dense_sampler(record.num_frames, self.t_length, self.t_stride)
+            dense_seg = -1
             for i in range(self.num_segments):
-                if i == dense_seg:
-                    samples = self.dense_sampler(average_duration, self.t_length, self.t_stride)
-                    samples = [sample + offsets[i] for sample in samples]
-                    dense_frames.extend(samples)
-                    dense_seg = -1 # set dense seg to -1 and check after sampling.
+                if dense_frames[self.t_length//2] >= offsets[self.num_segments - i - 1]:
+                    dense_seg = self.num_segments - i - 1
+                    break
                 else:
+                    continue
+            assert(dense_seg != -1)
+            # dense_seg = randint(self.num_segments)
+            for i in range(self.num_segments):
+                # if i == dense_seg:
+                    # samples = self.dense_sampler(average_duration, self.t_length, self.t_stride)
+                    # samples = [sample + offsets[i] for sample in samples]
+                    # dense_frames.extend(samples)
+                    # dense_seg = -1 # set dense seg to -1 and check after sampling.
+                if i != dense_seg:
                     samples = self.dense_sampler(average_duration, 1)
                     samples = [sample + offsets[i] for sample in samples]
                     sparse_frames.extend(samples)
             return {"dense":dense_frames, "sparse":sparse_frames}
         else:
-            return 
+            return
+        # num_segments = self.num_segments
+        # num_segments = 3
+        # sparse_frames = []
+        # dense_frames = []
+        # average_duration = record.num_frames / num_segments
+        # offsets = [average_duration * i for i in range(num_segments)]
+        # dense_seg = randint(num_segments)
+        # for i in range(num_segments):
+        #     if i == dense_seg:
+        #         samples = self.dense_sampler(average_duration, self.t_length, self.t_stride)
+        #         samples = [sample + offsets[i] for sample in samples]
+        #         dense_frames.extend(samples)
+        #         dense_seg = -1 # set dense seg to -1 and check after sampling.
+        #     else:
+        #         samples = self.dense_sampler(average_duration, 1)
+        #         samples = [sample + offsets[i] for sample in samples]
+        #         sparse_frames.extend(samples)
+        # if self.style == "Dense":
+        #     return {"dense": dense_frames}
+        # elif self.style == "UnevenDense":
+        #     return {"dense":dense_frames, "sparse":sparse_frames}
 
     def _get_val_indices(self, record):
         """
