@@ -18,3 +18,4 @@ data/kinetics200/kinetics200_val_list.txt \
 --lr_steps 40 80 90 \
 --workers 16 \
 --image_tmpl image_{:06d}.jpg \
+-ef 1 \

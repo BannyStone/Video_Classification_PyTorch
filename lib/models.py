@@ -1,5 +1,6 @@
 import os
 from torch import nn
+from torch.nn.parameter import Parameter
 from .networks.mnet2 import mnet2
 from .networks.mnet2_3d import mnet2_3d
 from .networks.resnet import *
@@ -126,19 +127,26 @@ class VideoShadowModule(nn.Module):
         # classifier: (dropout) + fc
         if self.dropout == 0:
             self.classifier = nn.Linear(self.base_model.feat_dim, self.num_class)
-            # self.shadow_classifier = nn.Linear(self.base_model.feat_dim, self.num_class)
+            self.shadow_classifier = nn.Linear(self.base_model.feat_dim, self.num_class)
         elif self.dropout > 0:
             self.classifier = nn.Sequential(nn.Dropout(self.dropout), nn.Linear(self.base_model.feat_dim, self.num_class))
-            # self.shadow_classifier = nn.Sequential(nn.Dropout(self.dropout), nn.Linear(self.base_model.feat_dim, self.num_class))
+            self.shadow_classifier = nn.Sequential(nn.Dropout(self.dropout), nn.Linear(self.base_model.feat_dim, self.num_class))
+
+        # shadow controller
+        # self.controller = Parameter(torch.ones(1))
 
         # init classifier
         for m in self.classifier.modules():
             if isinstance(m, nn.Linear):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='linear')
                 nn.init.constant_(m.bias, 0)
+
+        for m in self.shadow_classifier.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='linear')
+                nn.init.constant_(m.bias, 0)
         
-        if self.pretrained and self.pretrained_model:
-            pass
+        # if self.pretrained and self.pretrained_model:
             # print("load classifier")
             # self.classifier.load_state_dict(classifier_dict)
 
@@ -187,15 +195,16 @@ class VideoShadowModule(nn.Module):
             # assert(buffer.shape == shadow_module.shapes[buffer_name]), "buffer shape mismatch"
             shadow_module.register_buffer(buffer_name, buffer)
 
-    def _aggregate(self, dense_pred, sparse_pred):
-        assert(dense_pred.dim() == 2 and sparse_pred.dim() == 3), "Prediction dimension error."
-        dense_pred = dense_pred.view(dense_pred.shape[0], dense_pred.shape[1], 1)
-        out = torch.cat((dense_pred, sparse_pred * 0.5), dim=2)
+    def _aggregate(self, sparse_pred):
+        # assert(dense_pred.dim() == 2 and sparse_pred.dim() == 3), "Prediction dimension error."
+        assert(sparse_pred.dim() == 3), "Prediction dimension error."
+        # dense_pred = dense_pred.view(dense_pred.shape[0], dense_pred.shape[1], 1)
+        # out = torch.cat((dense_pred, sparse_pred * 0.5), dim=2)
         # out = dense_pred
         # out = sparse_pred
-        num_segments = out.shape[2]
+        num_segments = sparse_pred.shape[2]
         # print("Num Segment: ", num_segments)
-        out = out.sum(dim=2, keepdim=False).div(num_segments)
+        out = sparse_pred.sum(dim=2, keepdim=False).div(num_segments)
         return out
 
     def forward(self, input):
@@ -217,7 +226,7 @@ class VideoShadowModule(nn.Module):
             # Infer TSN
             out_shadow = self.shadow_model(shadow_input)
             # Aggregate across segments
-            out_2 = self._aggregate(out_base, out_shadow)
+            out_2 = self._aggregate(out_shadow)
             out_2 = self.classifier(out_2)
             if not self.before_softmax:
                 out_2 = self.softmax(out_2)
