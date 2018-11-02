@@ -88,7 +88,7 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq):
       # print("controller: ", model.module.controller.item())
       loss1 = criterion(output1, target)
       loss2 = criterion(output2, target)
-      loss = loss1 + loss2 * 0.2
+      loss = 0.8 * loss1 + 0.2 * loss2
 
       # measure accuracy and record loss
       prec1, prec5 = accuracy(output1, target, topk=(1, 5))
