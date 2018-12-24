@@ -2,7 +2,20 @@
 
 *Still in development*.
 
-This is a repository containing 3D models and 2D models for video classification based on [TSN Pytorch Codebase](https://github.com/yjxiong/tsn-pytorch)
+This is a repository containing 3D models and 2D models for video classification.
+
+## Results
+All the training scripts with ResNet-50 backbone are here:
+```Shell
+cd scripts
+```
+
+We report the baselines with ResNet-50 backbone as below.
+
+| <sub>network</sub> | <sub>input frames</<sub> | <sub>sampling stride</sub> | <sub>backbone</sub> | <sub>top1</sub> | <sub>top5</sub> |
+| ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
+| <sub>ResNet50-I3D</sub> | 16 | 4 | ResNet50 | 73.45 | 91.11 |
+
 
 ## Training
 
