@@ -5,7 +5,6 @@ import logging
 import torch
 
 from lib.utils.tools import *
-import ipdb
 
 def train(train_loader, model, criterion, optimizer, epoch, print_freq):
     batch_time = AverageMeter()
@@ -68,8 +67,6 @@ def validate(val_loader, model, criterion, print_freq, epoch, logger=None):
     with torch.no_grad():
         end = time.time()
         for i, (input, target) in enumerate(val_loader):
-            # ipdb.set_trace()
-            # print(input.shape)
             target = target.cuda(non_blocking=True)
 
             # compute output

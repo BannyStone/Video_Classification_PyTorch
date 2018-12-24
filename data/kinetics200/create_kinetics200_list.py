@@ -1,4 +1,4 @@
-import ipdb
+import pdb
 
 # extract target 200-class videos from the original videos
 with open('kinetics_train_list.txt') as tr400:
@@ -85,4 +85,4 @@ with open('kinetics200_val_list_org.txt') as f_src:
 			new_line = ' '.join(items)
 			f_dst.write(new_line + '\n')
 
-# ipdb.set_trace()
+# pdb.set_trace()

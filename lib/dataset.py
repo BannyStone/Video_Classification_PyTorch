@@ -7,7 +7,6 @@ import numpy as np
 from numpy.random import randint
 
 import torch
-import ipdb
 
 class VideoRecord(object):
     def __init__(self, row, root_path):
@@ -205,8 +204,6 @@ class VideoDataSet(data.Dataset):
             return self.get(record, indices, self.phase)
         else:
             raise TypeError("Unsuported phase {}".format(self.phase))
-        # ipdb.set_trace()
-        # return record.path, record.num_frames, indices # for debugging
 
     def get(self, record, indices, phase):
         # dense process data
@@ -263,5 +260,5 @@ if __name__ == "__main__":
                                  style="UnevenDense",
                                  phase="Train")
     # sample0 = td[0]
-    import ipdb
-    ipdb.set_trace()
+    import pdb
+    pdb.set_trace()

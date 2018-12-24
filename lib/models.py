@@ -9,8 +9,6 @@ from .networks.resnet_3d_new import resnet50_3d_v1, resnet101_3d_v1
 
 from .transforms import *
 
-import ipdb
-
 class VideoModule(nn.Module):
     def __init__(self, num_class, base_model_name='resnet50', 
                  before_softmax=True, dropout=0.8, pretrained=True, pretrained_model=None):

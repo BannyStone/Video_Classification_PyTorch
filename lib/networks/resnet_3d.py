@@ -312,8 +312,6 @@ class ResNet3D(nn.Module):
 
 
 def part_state_dict(state_dict, model_dict):
-    import ipdb
-    # ipdb.set_trace()
     pretrained_dict = {k: v for k, v in state_dict.items() if k in model_dict}
     pretrained_dict = inflate_state_dict(pretrained_dict, model_dict)
     model_dict.update(pretrained_dict)
