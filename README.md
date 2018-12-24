@@ -27,18 +27,7 @@ cd scripts
 
 We show one script here *kinetics400_3d_res101_v1_im_pre.sh*:
 ```Shell
-python main.py kinetics400 data/kinetics400/kinetics_train_list.txt data/kinetics400/kinetics_val_list.txt \
---arch resnet50_3d_v1 \
---dro 0.2 \
---mode 3D \
---t_length 16 \
---t_stride 4 \
---pretrained \
---epochs 110 \
---batch-size 64 \
---lr 0.001 \
---lr_steps 60 90 100 \
---workers 32 \
+python main.py kinetics400 data/kinetics400/kinetics_train_list.txt data/kinetics400/kinetics_val_list.txt --arch resnet50_3d_v1 --dro 0.2 --mode 3D --t_length 16 --t_stride 4 --pretrained --epochs 110 --batch-size 64 --lr 0.001 --lr_steps 60 90 100 --workers 32
 ```
 
 ## Testing
