@@ -26,7 +26,7 @@ cd scripts
 ```
 
 We show one script here *kinetics400_3d_res101_v1_im_pre.sh*:
-```bash
+```Shell
 python main.py kinetics400 data/kinetics400/kinetics_train_list.txt data/kinetics400/kinetics_val_list.txt \
 --arch resnet50_3d_v1 \
 --dro 0.2 \
@@ -42,7 +42,7 @@ python main.py kinetics400 data/kinetics400/kinetics_train_list.txt data/kinetic
 ```
 
 ## Testing
-```bash
+```Shell
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
 python ./test.py \
 kinetics400 \
