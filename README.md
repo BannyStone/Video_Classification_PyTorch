@@ -18,6 +18,14 @@ All the models are trained in one single server with 8 GTX 1080 Ti GPUs.
 | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
 | ResNet50-I3D | ImageNet-1K | 16 | 4 | ResNet50 | 73.45 | 91.11 |
 
+## Preparing Dataset
+### Kinetics-400
+```Shell
+cd data/kinetics400
+mkdir access && cd access
+ln -s [YOUR_KINETICS400_DATASET_TRAIN_DIR] RGB_train
+ln -s [YOUR_KINETICS400_DATASET_VAL_DIR] RGB_val
+```
 
 ## Training
 All the training scripts with ResNet-50 backbone are here:
