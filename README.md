@@ -21,7 +21,7 @@ All the models are trained in one single server with 8 GTX 1080 Ti GPUs.
 
 | <sub>network</sub> | <sub>pretrain data</sub> | <sub>spatial resolution</sub> | <sub>input frames</sub> | <sub>sampling stride</sub> | <sub>backbone</sub> | <sub>top1</sub> | <sub>top5</sub> |
 | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
-| ResNet50-I3D | ImageNet-1K | 224 \times 224 | 16 | 4 | ResNet50 | 73.45 | 91.11 |
+| ResNet50-I3D | ImageNet-1K | 224$\times$224 | 16 | 4 | ResNet50 | 73.45 | 91.11 |
 
 ## Preparing Dataset
 ### Kinetics-400
