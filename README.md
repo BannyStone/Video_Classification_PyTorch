@@ -26,7 +26,9 @@ mkdir access && cd access
 ln -s $YOUR_KINETICS400_DATASET_TRAIN_DIR$ RGB_train
 ln -s $YOUR_KINETICS400_DATASET_VAL_DIR$ RGB_val
 ```
-*Note: In data/kinetics400/kinetics_train_list.txt, each line represents one video where the first element is the video frame directory, the second element is the number of frames and the third element is the index of class.*
+Note that:
+- In data/kinetics400/kinetics_train_list.txt, each line represents one video where the first element is the video frame directory, the second element is the number of frames and the third element is the index of class. Please prepare your own list accordingly because different video parsing method may lead to different frame numbers.
+- In each video frame folder, this code can parse your frames according to the argument **
 
 ## Training
 All the training scripts with ResNet-50 backbone are here:

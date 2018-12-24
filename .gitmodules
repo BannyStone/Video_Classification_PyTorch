@@ -1,6 +1,0 @@
-[submodule "data/kinetics200/Mini-Kinetics-200"]
-	path = data/kinetics200/Mini-Kinetics-200
-	url = https://github.com/s9xie/Mini-Kinetics-200.git
-[submodule "data/kinetics200/--name"]
-	path = data/kinetics200/--name
-	url = https://github.com/BannyStone/Mini-Kinetics-200
