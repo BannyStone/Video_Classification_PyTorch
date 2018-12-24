@@ -5,6 +5,7 @@ from .networks.mnet2 import mnet2
 from .networks.mnet2_3d import mnet2_3d
 from .networks.resnet import *
 from .networks.resnet_3d import *
+from .networks.resnet_3d_new import resnet50_3d_v1, resnet101_3d_v1
 from .networks.shadownet import resnet50_shadow
 
 from .transforms import *

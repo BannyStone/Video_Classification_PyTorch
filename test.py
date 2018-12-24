@@ -19,15 +19,15 @@ parser = argparse.ArgumentParser(
 parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics400', 'kinetics200'])
 parser.add_argument('test_list', type=str)
 parser.add_argument('weights', type=str)
-parser.add_argument('--arch', type=str, default="resnet50_3d_lite")
+parser.add_argument('--arch', type=str, default="resnet50_3d_v1")
 parser.add_argument('--mode', type=str, default="TSN+3D")
 parser.add_argument('--save_scores', type=str, default=None)
 parser.add_argument('--batch_size', type=int, default=2)
-parser.add_argument('--num_segments', type=int, default=20)
+parser.add_argument('--num_segments', type=int, default=10)
 parser.add_argument('--test_crops', type=int, default=10)
 parser.add_argument('--input_size', type=int, default=224)
-parser.add_argument('--t_length', type=int, default=8)
-parser.add_argument('--t_stride', type=int, default=8)
+parser.add_argument('--t_length', type=int, default=16)
+parser.add_argument('--t_stride', type=int, default=4)
 parser.add_argument('--crop_fusion_type', type=str, default='avg',
                     choices=['avg', 'max', 'topk'])
 parser.add_argument('--image_tmpl', type=str)
@@ -64,6 +64,7 @@ def main():
     print("Model Size is {:.3f}M".format(num_params / 1000000))
 
     net = torch.nn.DataParallel(net).cuda()
+    net.eval()
 
     # load weights
     model_state = torch.load(args.weights)
@@ -117,19 +118,19 @@ def main():
             top1.update(prec1.item(), data.shape[0])
             top5.update(prec5.item(), data.shape[0])
 
-        # pdb.set_trace()
-        batch_timer.update(time.time() - end)
-        end = time.time()
-        if results is not None:
-            np.concatenate((results, output.cpu().numpy()), axis=0)
-        else:
-            results = output.cpu().numpy()
-        print("{0}/{1} done, Batch: {batch_timer.val:.3f}({batch_timer.avg:.3f}), \
-              Top1: {top1.val:>6.3f}({top1.avg:>6.3f}), \
-              Top5: {top5.val:>6.3f}({top5.avg:>6.3f})".
-              format(ind + 1, len(test_loader), 
-                batch_timer=batch_timer, 
-                top1=top1, top5=top5))
+            # pdb.set_trace()
+            batch_timer.update(time.time() - end)
+            end = time.time()
+            if results is not None:
+                np.concatenate((results, output.cpu().numpy()), axis=0)
+            else:
+                results = output.cpu().numpy()
+            print("{0}/{1} done, Batch: {batch_timer.val:.3f}({batch_timer.avg:.3f}), \
+                  Top1: {top1.val:>6.3f}({top1.avg:>6.3f}), \
+                  Top5: {top5.val:>6.3f}({top5.avg:>6.3f})".
+                  format(ind + 1, len(test_loader), 
+                    batch_timer=batch_timer, 
+                    top1=top1, top5=top5))
     target_file = os.path.join(args.save_scores, "arch_{0}-epoch_{1}-top1_{2}-top5_{3}.npz".format(arch, test_epoch, top1.avg, top5.avg))
     print("saving {}".format(target_file))
     np.savez(target_file, results)

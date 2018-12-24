@@ -187,7 +187,8 @@ class VideoDataSet(data.Dataset):
         frames = []
         for i in range(self.num_segments):
             for j in range(self.t_length):
-                frames.append(offsets[i] + j)
+                frames.append(offsets[i] + j*self.t_stride)
+                # frames.append(offsets[i]+j)
         return {"dense": frames}
 
     def __getitem__(self, index):
