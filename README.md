@@ -23,9 +23,10 @@ All the models are trained in one single server with 8 GTX 1080 Ti GPUs.
 ```Shell
 cd data/kinetics400
 mkdir access && cd access
-ln -s [YOUR_KINETICS400_DATASET_TRAIN_DIR] RGB_train
-ln -s [YOUR_KINETICS400_DATASET_VAL_DIR] RGB_val
+ln -s $YOUR_KINETICS400_DATASET_TRAIN_DIR$ RGB_train
+ln -s $YOUR_KINETICS400_DATASET_VAL_DIR$ RGB_val
 ```
+*In data/kinetics400/kinetics_train_list.txt, each line represents one video where the first element is the directory of one video, the second element is the number of frames and the third element is the index of class.*
 
 ## Training
 All the training scripts with ResNet-50 backbone are here:
