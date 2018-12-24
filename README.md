@@ -7,7 +7,9 @@ Until now, it supports the following datasets:
 Kinetics-400, Mini-Kinetics-200, UCF101
 
 ## Get the Code
+```Shell
 git clone --recursive https://github.com/BannyStone/Video_Classification_PyTorch.git
+```
 
 ## Datasets
 *Note: our Kinetics-400 has 240439 training videos and 19796 validation videos*.
