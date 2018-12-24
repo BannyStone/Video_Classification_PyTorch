@@ -8,7 +8,7 @@ data/kinetics400/kinetics_val_list.txt \
 --dro 0.2 \
 --mode 3D \
 --t_length 16 \
---t_stride 2 \
+--t_stride 4 \
 --pretrained \
 --epochs 110 \
 --batch-size 64 \
