@@ -1,0 +1,3 @@
+[submodule "data/kinetics200/Mini-Kinetics-200"]
+	path = data/kinetics200/Mini-Kinetics-200
+	url = https://github.com/BannyStone/Mini-Kinetics-200
