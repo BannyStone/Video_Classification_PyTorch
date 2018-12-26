@@ -8,12 +8,14 @@ Kinetics-400, Mini-Kinetics-200, UCF101
 
 ## Results
 
-We report the baselines with ResNet-50 backbone on Kinetics-400 validation set as below (training data is Kinetics-400 training set).
+### Kinetics-400
+
+We report the baselines with ResNet-50 backbone on Kinetics-400 validation set as below (all models are trained on training set).
 All the models are trained in one single server with 8 GTX 1080 Ti GPUs.
 
 | <sub>network</sub> | <sub>pretrain data</sub> | <sub>spatial resolution</sub> | <sub>input frames</sub> | <sub>sampling stride</sub> | <sub>backbone</sub> | <sub>top1</sub> | <sub>top5</sub> |
 | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
-| ResNet50-I3D | ImageNet-1K | 224x224 | 16 | 4 | ResNet50 | 73.45 | 91.11 |
+| <sub>ResNet50-I3D</sub> | <sub>ImageNet-1K</sub> | <sub>224x224</sub> | 16 | 4 | <sub>ResNet50</sub> | 73.45 | 91.11 |
 
 
 ## Get the Code
