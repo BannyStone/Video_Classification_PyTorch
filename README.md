@@ -1,6 +1,6 @@
 # Video-Classification-Pytorch
 
-*Still in development*.
+**Still in development**.
 
 This is a repository containing 3D models and 2D models for video classification. The code is based on PyTorch.
 Until now, it supports the following datasets:
@@ -15,7 +15,7 @@ All the models are trained in one single server with 8 GTX 1080 Ti GPUs.
 
 | <sub>network</sub> | <sub>pretrain data</sub> | <sub>spatial resolution</sub> | <sub>input frames</sub> | <sub>sampling stride</sub> | <sub>backbone</sub> | <sub>top1</sub> | <sub>top5</sub> |
 | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
-| <sub>ResNet50-I3D</sub> | <sub>ImageNet-1K</sub> | <sub>224x224</sub> | 16 | 4 | <sub>ResNet50</sub> | 73.45 | 91.11 |
+| <sub>ResNet50-I3D</sub> | <sub>ImageNet-1K</sub> | <sub>224x224</sub> | <sub>16</sub> | <sub>4</sub> | <sub>ResNet50</sub> | <sub>73.45</sub> | <sub>91.11</sub> |
 
 
 ## Get the Code
