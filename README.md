@@ -1,6 +1,6 @@
 # Video-Classification-Pytorch
 
-**Still in development**.
+***Still in development***.
 
 This is a repository containing 3D models and 2D models for video classification. The code is based on PyTorch.
 Until now, it supports the following datasets:
