@@ -29,6 +29,8 @@ parser.add_argument('--shadow', action='store_true')
 parser.add_argument('--dropout', '--do', default=0.2, type=float,
                     metavar='DO', help='dropout ratio (default: 0.2)')
 parser.add_argument('--mode', type=str, default='3D', choices=['3D', 'TSN', '2D'])
+parser.add_argument('--new_size', type=int, default=256)
+parser.add_argument('--crop_size', type=int, default=224)
 parser.add_argument('--t_length', type=int, default=32, help="time length")
 parser.add_argument('--t_stride', type=int, default=2, help="time stride between frames")
 parser.add_argument('--num_segments', type=int, default=1)

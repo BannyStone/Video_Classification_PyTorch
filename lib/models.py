@@ -6,6 +6,8 @@ from .networks.mnet2_3d import mnet2_3d
 from .networks.resnet import *
 from .networks.resnet_3d import *
 from .networks.resnet_3d_new import resnet50_3d_v1, resnet101_3d_v1
+from .networks.gsvnet import *
+from .networks.msvnet import *
 
 from .transforms import *
 
@@ -47,6 +49,9 @@ class VideoModule(nn.Module):
             model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
                                       "../models/mobilenet_v2.pth.tar")
             self.base_model = mnet2_3d(pretrained=model_path, feat=True)
+        elif "fst" in base_model_name or "msv" in base_model_name:
+            self.base_model = eval(base_model_name)(pretrained=self.pretrained,
+                                    feat=True, pretrained_model=base_model_dict)
         else:
             raise ValueError('Unknown base model: {}'.format(base_model))
 
@@ -66,6 +71,9 @@ class VideoModule(nn.Module):
             pass
             # print("load classifier")
             # self.classifier.load_state_dict(classifier_dict)
+
+        # import pdb
+        # pdb.set_trace()
 
     def forward(self, input):
         out = self.base_model(input)

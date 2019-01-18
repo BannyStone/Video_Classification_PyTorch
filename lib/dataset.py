@@ -66,7 +66,8 @@ class VideoDataSet(data.Dataset):
         return [Image.open(os.path.join(directory, self.image_tmpl.format(idx))).convert('RGB')]
 
     def _parse_list(self):
-        self.video_list = [VideoRecord(x.strip().split(' '), self.root_path) for x in open(self.list_file)]
+        self.video_list = [VideoRecord(x.strip().split(' '), self.root_path) for x in open(self.list_file) if VideoRecord(x.strip().split(' '), self.root_path).num_frames > 240]
+        print(len(self.video_list))
 
     @staticmethod
     def dense_sampler(num_frames, length, stride=1):
@@ -160,6 +161,7 @@ class VideoDataSet(data.Dataset):
         """
         get indices in val phase
         """
+        # valid_offset_range = record.num_frames - (self.t_length - 1) * self.t_stride - 1
         valid_offset_range = record.num_frames - (self.t_length - 1) * self.t_stride - 1
         offset = int(valid_offset_range / 2.0)
         if offset < 0:

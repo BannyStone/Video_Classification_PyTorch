@@ -18,8 +18,6 @@ from lib.opts import args
 
 from train_val import train, validate
 
-best_metric = 0
-
 def main():
     global args, best_metric
 
@@ -50,9 +48,7 @@ def main():
     print("Model Size is {:.3f}M".format(num_params/1000000))
 
     model = torch.nn.DataParallel(org_model).cuda()
-    # model = org_model
 
-    # define loss function (criterion) and optimizer
     criterion = torch.nn.CrossEntropyLoss().cuda()
 
     optimizer = torch.optim.SGD(model.parameters(),
@@ -73,29 +69,6 @@ def main():
                   .format(args.resume, checkpoint['epoch'])))
         else:
             print(("=> no checkpoint found at '{}'".format(args.resume)))
-
-    # Data loading code
-    ## train data
-    train_transform = torchvision.transforms.Compose([
-        GroupScale(args.new_size),
-        GroupMultiScaleCrop(input_size=args.crop_size, scales=[1, .875, .75, .66]),
-        GroupRandomHorizontalFlip(),
-        Stack(mode=args.mode),
-        ToTorchFormatTensor(),
-        GroupNormalize(),
-        ])
-    train_dataset = VideoDataSet(root_path=data_root, 
-        list_file=args.train_list,
-        t_length=args.t_length, 
-        t_stride=args.t_stride, 
-        num_segments=args.num_segments,
-        image_tmpl=args.image_tmpl, 
-        transform=train_transform,
-        phase="Train")
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, 
-        batch_size=args.batch_size, shuffle=True, drop_last=True,
-        num_workers=args.workers, pin_memory=True)
 
     ## val data
     val_transform = torchvision.transforms.Compose([
@@ -123,26 +96,6 @@ def main():
 
     validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
 
-    for epoch in range(args.start_epoch, args.epochs):
-        adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)
-
-        # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch, args.print_freq)
-
-        # evaluate on validation set
-        if (epoch + 1) % args.eval_freq == 0 or epoch == args.epochs - 1:
-            metric = validate(val_loader, model, criterion, args.print_freq, epoch + 1)
-
-            # remember best prec@1 and save checkpoint
-            is_best = metric > best_metric
-            best_metric = max(metric, best_metric)
-            save_checkpoint({
-                'epoch': epoch + 1,
-                'arch': args.arch,
-                'state_dict': model.state_dict(),
-                'best_metric': best_metric,
-                'optimizer': optimizer.state_dict(),
-            }, is_best, epoch + 1, args.experiment_root)
 
 if __name__ == '__main__':
     main()
