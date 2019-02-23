@@ -29,6 +29,20 @@ class GloAvgPool3d(nn.Module):
         return F.avg_pool3d(input, kernel_size, self.stride,
                             self.padding, self.ceil_mode, self.count_include_pad)
 
+class GloSptMaxPool3d(nn.Module):
+    def __init__(self):
+        super(GloSptMaxPool3d, self).__init__()
+        self.stride = 1
+        self.padding = 0
+        self.ceil_mode = False
+        self.count_include_pad = True
+
+    def forward(self, input):
+        input_shape = input.shape
+        kernel_size = (1,) + input_shape[3:]
+        return F.max_pool3d(input, kernel_size=kernel_size, stride=self.stride,
+                            padding=self.padding, ceil_mode=self.ceil_mode)
+
 def conv1x3x3(in_planes, out_planes, stride=1, t_stride=1):
     """1x3x3 convolution with padding"""
     return nn.Conv3d(in_planes, out_planes, kernel_size=(1, 3, 3),
@@ -41,11 +55,11 @@ def conv3x1x1(in_planes, out_planes, stride=1, t_stride=1):
                      stride=(t_stride, stride, stride),
                      padding=(1, 0, 0), bias=False)
 
-class Bottleneck3D_100(nn.Module):
+class GSVBottleneck3D_100(nn.Module):
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
-        super(Bottleneck3D_100, self).__init__()
+        super(GSVBottleneck3D_100, self).__init__()
         self.conv1 = nn.Conv3d(inplanes, planes, kernel_size=(3, 1, 1), 
                                stride=(t_stride, 1, 1),
                                padding=(1, 0, 0), bias=False)
@@ -55,7 +69,13 @@ class Bottleneck3D_100(nn.Module):
         self.bn2 = nn.BatchNorm3d(planes)
         self.conv3 = nn.Conv3d(planes, planes * self.expansion, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.spt_glo_pool = GloSptMaxPool3d()
+        self.conv_t = nn.Conv3d(inplanes, planes, kernel_size=(3,1,1),
+                                stride=(t_stride,1,1),
+                                padding=(1,0,0),bias=False)
+        self.conv_p = nn.Conv3d(planes, planes * self.expansion, kernel_size=1, bias=False)
         self.relu = nn.ReLU(inplace=True)
+        self.sigmoid = nn.Sigmoid()
         self.downsample = downsample
         self.stride = stride
 
@@ -73,6 +93,16 @@ class Bottleneck3D_100(nn.Module):
         out = self.conv3(out)
         out = self.bn3(out)
 
+        gsv = self.spt_glo_pool(x)
+        gsv = self.conv_t(gsv)
+        gsv = self.relu(gsv)
+        gsv = self.conv_p(gsv)
+        gsv = self.sigmoid(gsv)
+        # gsv = gsv.view(gsv.size(0), gsv.size(1), gsv.size(2), 1, 1)
+        out = out * gsv
+        # out = out + out1
+
+
         if self.downsample is not None:
             residual = self.downsample(x)
 
@@ -81,11 +111,11 @@ class Bottleneck3D_100(nn.Module):
 
         return out
 
-class Bottleneck3D_101(nn.Module):
+class GSVBottleneck3D_101(nn.Module):
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
-        super(Bottleneck3D_101, self).__init__()
+        super(GSVBottleneck3D_101, self).__init__()
         self.conv1 = nn.Conv3d(inplanes, planes, kernel_size=(3, 1, 1), 
                                stride=(t_stride, 1, 1),
                                padding=(1, 0, 0), bias=False)
@@ -98,7 +128,13 @@ class Bottleneck3D_101(nn.Module):
                                 padding=(1, 0, 0),
                                 bias=False)
         self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.spt_glo_pool = GloSptMaxPool3d()
+        self.conv_t = nn.Conv3d(inplanes, planes, kernel_size=(3,1,1),
+                                stride=(t_stride,1,1),
+                                padding=(1,0,0),bias=False)
+        self.conv_p = nn.Conv3d(planes, planes * self.expansion, kernel_size=1, bias=False)
         self.relu = nn.ReLU(inplace=True)
+        self.sigmoid = nn.Sigmoid()
         self.downsample = downsample
         self.stride = stride
 
@@ -115,6 +151,15 @@ class Bottleneck3D_101(nn.Module):
 
         out = self.conv3(out)
         out = self.bn3(out)
+
+        gsv = self.spt_glo_pool(x)
+        gsv = self.conv_t(gsv)
+        gsv = self.relu(gsv)
+        gsv = self.conv_p(gsv)
+        gsv = self.sigmoid(gsv)
+        # gsv = gsv.view(gsv.size(0), gsv.size(1), gsv.size(2), 1, 1)
+        out = out * gsv
+        # out += out1
 
         if self.downsample is not None:
             residual = self.downsample(x)
@@ -124,11 +169,11 @@ class Bottleneck3D_101(nn.Module):
 
         return out
 
-class Bottleneck3D_000(nn.Module):
+class GSVBottleneck3D_000(nn.Module):
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
-        super(Bottleneck3D_000, self).__init__()
+        super(GSVBottleneck3D_000, self).__init__()
         self.conv1 = nn.Conv3d(inplanes, planes, kernel_size=1, 
                                stride=[t_stride, 1, 1], bias=False)
         self.bn1 = nn.BatchNorm3d(planes)
@@ -137,7 +182,13 @@ class Bottleneck3D_000(nn.Module):
         self.bn2 = nn.BatchNorm3d(planes)
         self.conv3 = nn.Conv3d(planes, planes * self.expansion, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.spt_glo_pool = GloSptMaxPool3d()
+        self.conv_t = nn.Conv3d(inplanes, planes, kernel_size=(3,1,1),
+                                stride=(t_stride,1,1),
+                                padding=(1,0,0),bias=False)
+        self.conv_p = nn.Conv3d(planes, planes * self.expansion, kernel_size=1, bias=False)
         self.relu = nn.ReLU(inplace=True)
+        self.sigmoid = nn.Sigmoid()
         self.downsample = downsample
         self.stride = stride
 
@@ -154,6 +205,15 @@ class Bottleneck3D_000(nn.Module):
 
         out = self.conv3(out)
         out = self.bn3(out)
+
+        gsv = self.spt_glo_pool(x)
+        gsv = self.conv_t(gsv)
+        gsv = self.relu(gsv)
+        gsv = self.conv_p(gsv)
+        gsv = self.sigmoid(gsv)
+        # gsv = gsv.view(gsv.size(0), gsv.size(1), gsv.size(2), 1, 1)
+        out = out * gsv
+        # out += out1
 
         if self.downsample is not None:
             residual = self.downsample(x)
@@ -260,32 +320,12 @@ def inflate_state_dict(pretrained_dict, model_dict):
 
     return pretrained_dict
 
-def resnet50_3d_v1(pretrained=False, feat=False, **kwargs):
+def gsv_resnet50_3d_v1(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-50 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_100, Bottleneck3D_101, Bottleneck3D_101], 
-                     [3, 4, 6, 3], feat=feat, **kwargs)
-    # import pdb
-    # pdb.set_trace()
-    if pretrained:
-        if kwargs['pretrained_model'] is None:
-            state_dict = model_zoo.load_url(model_urls['resnet50'])
-        else:
-            print("Using specified pretrain model")
-            state_dict = kwargs['pretrained_model']
-        if feat:
-            new_state_dict = part_state_dict(state_dict, model.state_dict())
-            model.load_state_dict(new_state_dict)
-    return model
-
-def resnet50_3d_v2(pretrained=False, feat=False, **kwargs):
-    """Constructs a ResNet-50 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_100, Bottleneck3D_100], 
+    model = ResNet3D([GSVBottleneck3D_000, GSVBottleneck3D_100, GSVBottleneck3D_101, GSVBottleneck3D_101], 
                      [3, 4, 6, 3], feat=feat, **kwargs)
     # import pdb
     # pdb.set_trace()

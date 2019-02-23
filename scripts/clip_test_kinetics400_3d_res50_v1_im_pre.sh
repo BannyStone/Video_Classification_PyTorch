@@ -7,7 +7,7 @@ data/kinetics400/kinetics_val_list.txt \
 --dro 0.2 \
 --mode 3D \
 --t_length 61 \
---t_stride 4 \
+--t_stride 1 \
 --pretrained \
 --batch-size 64 \
 --workers 10 \

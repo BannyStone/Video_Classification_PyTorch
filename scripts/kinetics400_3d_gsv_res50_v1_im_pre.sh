@@ -4,16 +4,14 @@ python main.py \
 kinetics400 \
 data/kinetics400/kinetics_train_list.txt \
 data/kinetics400/kinetics_val_list.txt \
---arch fst_resnet18 \
+--arch gsv_resnet50_3d_v1 \
 --dro 0.2 \
 --mode 3D \
---new_size 128 \
---crop_size 112 \
 --t_length 16 \
 --t_stride 4 \
---epochs 130 \
---batch-size 128 \
---lr 0.01 \
---lr_steps 80 100 120 \
+--pretrained \
+--epochs 110 \
+--batch-size 64 \
+--lr 0.001 \
+--lr_steps 60 90 100 \
 --workers 32 \
---resume ./output/kinetics400_fst_resnet18_3D_length16_stride4_dropout0.2/checkpoint_68epoch.pth \

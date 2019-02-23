@@ -5,7 +5,8 @@ from .networks.mnet2 import mnet2
 from .networks.mnet2_3d import mnet2_3d
 from .networks.resnet import *
 from .networks.resnet_3d import *
-from .networks.resnet_3d_new import resnet50_3d_v1, resnet101_3d_v1
+from .networks.resnet_3d_new import resnet50_3d_v1, resnet101_3d_v1, resnet50_3d_v2
+from .networks.gsv_resnet_3d_v1 import gsv_resnet50_3d_v1
 from .networks.gsvnet import *
 from .networks.msvnet import *
 
@@ -21,6 +22,7 @@ class VideoModule(nn.Module):
         self.dropout = dropout
         self.pretrained = pretrained
         self.pretrained_model = pretrained_model
+        # self.finetune = finetune
 
         self._prepare_base_model(base_model_name)
 
@@ -68,9 +70,15 @@ class VideoModule(nn.Module):
                 nn.init.constant_(m.bias, 0)
         
         if self.pretrained and self.pretrained_model:
-            pass
-            # print("load classifier")
-            # self.classifier.load_state_dict(classifier_dict)
+            self.classifier.load_state_dict(classifier_dict)
+
+        # if self.finetune:
+        #     print("Finetune")
+        #     for param in self.base_model.parameters():
+        #         param.requires_grad = False
+        #     for m in self.base_model.modules():
+        #         if isinstance(m, nn.BatchNorm3d):
+        #             m.eval()
 
         # import pdb
         # pdb.set_trace()

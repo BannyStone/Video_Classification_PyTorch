@@ -66,8 +66,9 @@ class VideoDataSet(data.Dataset):
         return [Image.open(os.path.join(directory, self.image_tmpl.format(idx))).convert('RGB')]
 
     def _parse_list(self):
-        self.video_list = [VideoRecord(x.strip().split(' '), self.root_path) for x in open(self.list_file) if VideoRecord(x.strip().split(' '), self.root_path).num_frames > 240]
-        print(len(self.video_list))
+        self.video_list = [VideoRecord(x.strip().split(' '), self.root_path) for x in open(self.list_file)]
+        # self.video_list = [VideoRecord(x.strip().split(' '), self.root_path) for x in open(self.list_file) if VideoRecord(x.strip().split(' '), self.root_path).num_frames > 240]
+        # print(len(self.video_list))
 
     @staticmethod
     def dense_sampler(num_frames, length, stride=1):
