@@ -80,7 +80,7 @@ def main():
 
     ## test data
     test_transform = torchvision.transforms.Compose([
-        GroupOverSample(args.input_size, args.resize),
+        GroupOverSampleKaiming(args.input_size, args.resize),
         Stack(mode=args.mode),
         ToTorchFormatTensor(),
         GroupNormalize(),

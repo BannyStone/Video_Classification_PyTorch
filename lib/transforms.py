@@ -92,6 +92,49 @@ class GroupOverSample(object):
             oversample_group.extend(flip_group)
         return oversample_group
 
+class GroupOverSampleKaiming(object):
+    def __init__(self, crop_size, scale_size=None):
+        self.crop_size = crop_size if not isinstance(crop_size, int) else (crop_size, crop_size)
+
+        if scale_size is not None:
+            self.scale_worker = GroupScale(scale_size)
+        else:
+            self.scale_worker = None
+
+    def __call__(self, img_group):
+
+        if self.scale_worker is not None:
+            img_group = self.scale_worker(img_group)
+
+        image_w, image_h = img_group[0].size
+        crop_w, crop_h = self.crop_size
+
+        offsets = self.fill_fix_offset(image_w, image_h, crop_w, crop_h)
+        oversample_group = list()
+        for o_w, o_h in offsets:
+            normal_group = list()
+            flip_group = list()
+            for i, img in enumerate(img_group):
+                crop = img.crop((o_w, o_h, o_w + crop_w, o_h + crop_h))
+                normal_group.append(crop)
+                flip_crop = crop.copy().transpose(Image.FLIP_LEFT_RIGHT)
+                flip_group.append(flip_crop)
+
+            oversample_group.extend(normal_group)
+            oversample_group.extend(flip_group)
+        return oversample_group
+
+    def fill_fix_offset(self, image_w, image_h, crop_w, crop_h):
+        assert(crop_h  == image_h), "In Kaiming mode, crop_h should equal to image_h"
+        w_step = (image_w - crop_w) // 4
+
+        ret = list()
+        ret.append((0, 0))  # left
+        ret.append((4 * w_step, 0))  # right
+        ret.append((2 * w_step, 0))  # center
+
+        return ret
+
 
 class GroupMultiScaleCrop(object):
 

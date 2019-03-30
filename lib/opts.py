@@ -19,7 +19,7 @@ def set_logger(debug_mode=False):
                 handlers = handlers)
 
 parser = argparse.ArgumentParser(description="PyTorch implementation of Video Classification")
-parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics400', 'kinetics200'])
+parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics400', 'kinetics200', 'imagenet'])
 parser.add_argument('train_list', type=str)
 parser.add_argument('val_list', type=str)
 

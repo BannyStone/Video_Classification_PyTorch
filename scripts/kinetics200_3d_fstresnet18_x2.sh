@@ -11,8 +11,9 @@ data/kinetics200/kinetics200_val_list.txt \
 --crop_size 112 \
 --t_length 16 \
 --t_stride 4 \
---epochs 100 \
+--epochs 120 \
 --batch-size 192 \
 --lr 0.01 \
---lr_steps 40 70 90 \
+--lr_steps 100 110 \
 --workers 16 \
+--resume ./output/kinetics200_fst_resnet18_x2_3D_length16_stride4_dropout0.2/checkpoint_80epoch.pth

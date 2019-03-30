@@ -13,6 +13,32 @@ from ..modules.fst import sharenormGSV_spt as GSV_spt
 from operator import mul
 from functools import reduce
 
+class PSTBlock(nn.Module):
+    def __init__(self, inplanes, planes, s_stride=1, t_stride=1, downsample=None):
+        super(PSTBlock, self).__init__()
+        self.spt = sConv(inplanes, planes, 
+                        s_kernel_size=3, 
+                        s_stride=s_stride)
+        self.tem = tConv(inplanes, planes, 
+                        t_kernel_size=3, 
+                        t_stride=t_stride)
+        self.fus = stFus(type="SUM")
+        self.downsample = downsample
+
+    def forward(self, x):
+        identity = x
+
+        s = self.spt(x)
+        t = self.tem(x)
+
+        out = self.fus(s, t)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        return out
+
 class basicFST(nn.Module):
     def __init__(self,
                 inplanes, planes, 

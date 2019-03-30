@@ -5,8 +5,9 @@ from .networks.mnet2 import mnet2
 from .networks.mnet2_3d import mnet2_3d
 from .networks.resnet import *
 from .networks.resnet_3d import *
-from .networks.resnet_3d_new import resnet50_3d_v1, resnet101_3d_v1, resnet50_3d_v2
+from .networks.resnet_3d_new import resnet50_3d_v1, resnet101_3d_v1, resnet50_3d_v2, resnet50_3d_v3
 from .networks.gsv_resnet_3d_v1 import gsv_resnet50_3d_v1
+from .networks.gsv_resnet_3d_v3 import gsv_resnet50_3d_v3, gsv_resnet50_3d_v3_lite
 from .networks.gsvnet import *
 from .networks.msvnet import *
 
@@ -51,7 +52,7 @@ class VideoModule(nn.Module):
             model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
                                       "../models/mobilenet_v2.pth.tar")
             self.base_model = mnet2_3d(pretrained=model_path, feat=True)
-        elif "fst" in base_model_name or "msv" in base_model_name:
+        elif "fst" in base_model_name or "msv" in base_model_name or "gsv" in base_model_name:
             self.base_model = eval(base_model_name)(pretrained=self.pretrained,
                                     feat=True, pretrained_model=base_model_dict)
         else:
@@ -69,8 +70,8 @@ class VideoModule(nn.Module):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='linear')
                 nn.init.constant_(m.bias, 0)
         
-        if self.pretrained and self.pretrained_model:
-            self.classifier.load_state_dict(classifier_dict)
+        # if self.pretrained and self.pretrained_model:
+        #     self.classifier.load_state_dict(classifier_dict)
 
         # if self.finetune:
         #     print("Finetune")
