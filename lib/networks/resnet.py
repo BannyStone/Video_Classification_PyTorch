@@ -5,9 +5,12 @@ Modify the original file to make the class support feature extraction
 import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
+import torch
+from torch.nn.parameter import Parameter
+from ..modules import *
 
 
-__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
+__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet26', 'resnet50', 'resnet101',
            'resnet152']
 
 
@@ -25,6 +28,13 @@ def conv3x3(in_planes, out_planes, stride=1):
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
                      padding=1, bias=False)
 
+# class Scale2d(nn.Module):
+#     def __init__(self, out_channels):
+#         super(Scale2d, self).__init__()
+#         self.scale = Parameter(torch.Tensor(1, out_channels, 1, 1))
+
+#     def forward(self, input):
+#         return input * self.scale
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -96,6 +106,48 @@ class Bottleneck(nn.Module):
 
         return out
 
+class SCBottleneck(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(SCBottleneck, self).__init__()
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
+                               padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes)
+        self.conv3 = nn.Conv2d(planes, planes * self.expansion, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.sc = Scale2d(out_channels=inplanes)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        # residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        # if residual.device == torch.device('cuda:0'):
+        #     print(self.sc.scale.view(-1)[:20].data)
+        residual = self.sc(x)
+        if self.downsample is not None:
+            residual = self.downsample(residual)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
 
 class ResNet(nn.Module):
 
@@ -123,6 +175,8 @@ class ResNet(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
+            elif isinstance(m, Scale2d):
+                nn.init.constant_(m.scale, 1)
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
@@ -191,6 +245,21 @@ def resnet34(pretrained=False, feat=False, **kwargs):
         model.load_state_dict(state_dict)
     return model
 
+def resnet26(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet(Bottleneck, [2, 2, 2, 2], feat=feat, **kwargs)
+    return model
+
+def resnet26_sc(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet(SCBottleneck, [2, 2, 2, 2], feat=feat, **kwargs)
+    return model
 
 def resnet50(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-50 model.

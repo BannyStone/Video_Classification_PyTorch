@@ -123,6 +123,7 @@ def main():
 
     if args.resume:
         validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
+        torch.cuda.empty_cache()
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)
@@ -133,6 +134,7 @@ def main():
         # evaluate on validation set
         if (epoch + 1) % args.eval_freq == 0 or epoch == args.epochs - 1:
             metric = validate(val_loader, model, criterion, args.print_freq, epoch + 1)
+            torch.cuda.empty_cache()
 
             # remember best prec@1 and save checkpoint
             is_best = metric > best_metric

@@ -13,7 +13,10 @@ import torch.optim
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torchvision.models.resnet import *
+from torchvision.models.vgg import *
+from lib.networks.resnet import resnet26, resnet26_sc
 from lib.networks.gsv_resnet_2d_v3 import gsv_resnet50_2d_v3
+from lib.modules import *
 from lib.utils.tools import *
 from lib.opts import args
 
@@ -34,7 +37,7 @@ def main():
                              "data/{}/access".format(args.dataset))
 
     # create model
-    org_model = eval(args.arch)(pretrained=args.pretrained, pretrain_model=args.pretrained_model, feat=False, num_classes=num_class)
+    org_model = eval(args.arch)(pretrained=args.pretrained)#, feat=False, num_classes=num_class)
     num_params = 0
     for param in org_model.parameters():
         num_params += param.reshape((-1, 1)).shape[0]
@@ -46,7 +49,25 @@ def main():
     # define loss function (criterion) and optimizer
     criterion = torch.nn.CrossEntropyLoss().cuda()
 
-    optimizer = torch.optim.SGD(model.parameters(),
+    # scale params
+    scale_parameters = []
+    other_parameters = []
+    for m in model.modules():
+        if isinstance(m, Scale2d):
+            scale_parameters.append(m.scale)
+        elif isinstance(m, nn.Conv2d):
+            other_parameters.append(m.weight)
+            if m.bias is not None:
+                other_parameters.append(m.bias)
+        elif isinstance(m, nn.BatchNorm2d):
+            other_parameters.append(m.weight)
+            other_parameters.append(m.bias)
+        elif isinstance(m, nn.Linear):
+            other_parameters.append(m.weight)
+            other_parameters.append(m.bias)
+
+    optimizer = torch.optim.SGD([{"params": other_parameters}, 
+                                 {"params": scale_parameters, "weight_decay": 0}],
                                 args.lr,
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
@@ -97,7 +118,7 @@ def main():
                 num_workers=args.workers, pin_memory=True)
 
     cudnn.benchmark = True
-    validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
+    # validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)

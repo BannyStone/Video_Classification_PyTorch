@@ -5,9 +5,9 @@ from .networks.mnet2 import mnet2
 from .networks.mnet2_3d import mnet2_3d
 from .networks.resnet import *
 from .networks.resnet_3d import *
-from .networks.resnet_3d_new import resnet50_3d_v1, resnet101_3d_v1, resnet50_3d_v2, resnet50_3d_v3
+from .networks.resnet_3d_new import resnet50_3d_v1, resnet101_3d_v1, resnet50_3d_v2, resnet50_3d_v3, resnet26_3d_v3
 from .networks.gsv_resnet_3d_v1 import gsv_resnet50_3d_v1
-from .networks.gsv_resnet_3d_v3 import gsv_resnet50_3d_v3, gsv_resnet50_3d_v3_lite
+from .networks.gsv_resnet_3d_v3 import gsv_resnet50_3d_v3, gsv_resnet50_3d_v3_lite, gsv_resnet26_3d_v3
 from .networks.gsvnet import *
 from .networks.msvnet import *
 
