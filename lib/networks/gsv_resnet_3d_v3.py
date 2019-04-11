@@ -8,6 +8,8 @@ import torch.nn.functional as F
 import math
 import torch.utils.model_zoo as model_zoo
 
+from ..modules.scale import *
+
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
     'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
@@ -44,13 +46,13 @@ class GloSptMaxPool3d(nn.Module):
         return F.max_pool3d(input, kernel_size=kernel_size, stride=self.stride,
                             padding=self.padding, ceil_mode=self.ceil_mode)
 
-class Scale3d(nn.Module):
-    def __init__(self, out_channels):
-        super(Scale3d, self).__init__()
-        self.scale = Parameter(torch.Tensor(1, out_channels, 1, 1, 1))
+# class Scale3d(nn.Module):
+#     def __init__(self, out_channels):
+#         super(Scale3d, self).__init__()
+#         self.scale = Parameter(torch.Tensor(1, out_channels, 1, 1, 1))
 
-    def forward(self, input):
-        return input * self.scale
+#     def forward(self, input):
+#         return input * self.scale
 
 class GSVBottleneck3D_100(nn.Module):
     expansion = 4
@@ -80,6 +82,7 @@ class GSVBottleneck3D_100(nn.Module):
                                 padding=(1,0,0),
                                 bias=False)
         self.scale_t = nn.BatchNorm3d(planes)
+        # self.scale_t = Scale3d(planes)
         # self.scale_a = Scale3d(1)
         self.relu = nn.ReLU(inplace=True)
         self.sigmoid = nn.Sigmoid()
@@ -94,6 +97,77 @@ class GSVBottleneck3D_100(nn.Module):
 
         gsv = self.spt_glo_pool(x)
         gsv = self.conv_t(gsv)
+        gsv = self.scale_t(gsv)
+        gsv = self.sigmoid(gsv)
+        # if gsv.device == torch.device('cuda:0'):
+        #     print(self.scale_t.scale.view(-1)[:50].data)
+        # out = 2 * out * gsv
+        out = out * gsv + out
+        # out = self.scale_a(out)
+        out = self.relu(out)
+        # print("scale value:", self.scale_t.scale.view(-1)[:3])
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+class shareGSVBottleneck3D_100(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
+        super(shareGSVBottleneck3D_100, self).__init__()
+        self.t_stride = t_stride
+        self.conv1 = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(1, 0, 0), 
+                               bias=False)
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, 
+                               kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), 
+                               padding=(0, 1, 1), 
+                               bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, 
+                               kernel_size=1, 
+                               bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.spt_glo_pool = GloSptMaxPool3d()
+        # self.conv_t = nn.Conv3d(inplanes, planes, 
+        #                         kernel_size=(3,1,1),
+        #                         stride=(t_stride,1,1),
+        #                         padding=(1,0,0),
+        #                         bias=False)
+        self.scale_t = nn.BatchNorm3d(planes)
+        # self.scale_t = Scale3d(planes)
+        # self.scale_a = Scale3d(1)
+        self.relu = nn.ReLU(inplace=True)
+        self.sigmoid = nn.Sigmoid()
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+
+        gsv = self.spt_glo_pool(x)
+        # gsv = self.conv_t(gsv)
+        gsv = F.conv3d(gsv, self.conv1.weight, self.conv1.bias, self.t_stride,
+                        (1, 0, 0), (1, 1, 1), 1)
         gsv = self.scale_t(gsv)
         gsv = self.sigmoid(gsv)
         # if gsv.device == torch.device('cuda:0'):
@@ -146,6 +220,7 @@ class GSVBottleneck3D_000(nn.Module):
                                 padding=(1,0,0),
                                 bias=False)
         self.scale_t = nn.BatchNorm3d(planes)
+        # self.scale_t = Scale3d(planes)
         # self.scale_a = Scale3d(1)
         self.relu = nn.ReLU(inplace=True)
         self.sigmoid = nn.Sigmoid()
@@ -222,7 +297,7 @@ class GSV_ResNet3D(nn.Module):
                 nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.BatchNorm3d) and "scale" in n:
                 # nn.init.normal_(m.weight, 0, 0.001)
-                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.weight, 0)
                 nn.init.constant_(m.bias, 0)
             elif isinstance(m, Scale3d):
                 nn.init.constant_(m.scale, 0)
@@ -396,7 +471,26 @@ def gsv_resnet26_3d_v3(pretrained=False, feat=False, **kwargs):
                      [2, 2, 2, 2], feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:
-            state_dict = model_zoo.load_url(model_urls['resnet50'])
+            raise ValueError("pretrained model must be specified")
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
+def share_gsv_resnet26_3d_v3(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = GSV_ResNet3D([GSVBottleneck3D_000, shareGSVBottleneck3D_100, 
+                          shareGSVBottleneck3D_100, shareGSVBottleneck3D_100], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            raise ValueError("pretrained model must be specified")
         else:
             print("Using specified pretrain model")
             state_dict = kwargs['pretrained_model']

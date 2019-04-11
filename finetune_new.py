@@ -17,14 +17,13 @@ from lib.utils.tools import *
 from lib.opts import args
 from lib.modules import *
 
-from train_val import train, validate
+from train_val import train, validate,finetune_new
 
 best_metric = 0
 
 def main():
     global args, best_metric
 
-    # specify dataset
     if 'ucf101' in args.dataset:
         num_class = 101
     elif 'hmdb51' in args.dataset:
@@ -68,19 +67,15 @@ def main():
     other_parameters = []
     for m in model.modules():
         if isinstance(m, Scale3d):
-            print("scale3d")
             scale_parameters.append(m.scale)
         elif isinstance(m, nn.Conv3d):
-            # print("conv3d")
             other_parameters.append(m.weight)
             if m.bias is not None:
                 other_parameters.append(m.bias)
         elif isinstance(m, nn.BatchNorm3d):
-            # print("batchnorm3d")
             other_parameters.append(m.weight)
             other_parameters.append(m.bias)
         elif isinstance(m, nn.Linear):
-            # print("linear")
             other_parameters.append(m.weight)
             other_parameters.append(m.bias)
 #"weight_decay": 0
@@ -159,7 +154,7 @@ def main():
         adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)
 
         # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch, args.print_freq)
+        finetune_new(train_loader, model, criterion, optimizer, epoch, args.print_freq)
 
         # evaluate on validation set
         if (epoch + 1) % args.eval_freq == 0 or epoch == args.epochs - 1:

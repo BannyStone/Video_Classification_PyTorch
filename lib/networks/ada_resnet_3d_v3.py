@@ -7,6 +7,7 @@ from torch.nn.parameter import Parameter
 import torch.nn.functional as F
 import math
 import torch.utils.model_zoo as model_zoo
+from ..modules import *
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -16,41 +17,45 @@ model_urls = {
     'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
 }
 
-class GloAvgPool3d(nn.Module):
-    def __init__(self):
-        super(GloAvgPool3d, self).__init__()
-        self.stride = 1
-        self.padding = 0
-        self.ceil_mode = False
-        self.count_include_pad = True
+class AdaModule_v1(nn.Module):
+    """
+    Compress spatial dimension to learn temporal dependency.
+    Switch between 3x1x1 and 1x1x1
+    """
+    def __init__(self, inplanes, planes, t_stride, factor=4):
+        super(AdaModule_v1, self).__init__()
+        self.spt_sum = GloSptMaxPool3d()
+        self.conv_p1 = nn.Conv3d(inplanes, planes//factor, kernel_size=1,
+                                stride=1, bias=False)
+        self.bn_p1 = nn.BatchNorm3d(planes//factor)
+        self.conv_t1 = nn.Conv3d(planes//factor, planes//factor, kernel_size=(3,1,1),
+                                stride=(t_stride,1,1), padding=(1,0,0), bias=False)
+        self.bn_t1 = nn.BatchNorm3d(planes//factor)
+        self.conv_p2 = nn.Conv3d(planes//factor, planes, kernel_size=1,
+                                stride=1, bias=False)
+        self.relu = nn.ReLU(inplace=True)
+        self.sigmoid = nn.Sigmoid()
+        # self.conv_p = nn.Conv3d(inplanes, planes, kernel_size=1,
+        #                        stride=[t_stride, 1, 1], bias=False)
+        # self.conv_t = nn.Conv3d(inplanes, planes, kernel_size=(3, 1, 1),
+        #                        stride=[t_stride, 1, 1], bias=False)
 
     def forward(self, input):
-        input_shape = input.shape
-        kernel_size = input_shape[2:]
-        return F.avg_pool3d(input, kernel_size, self.stride,
-                            self.padding, self.ceil_mode, self.count_include_pad)
+        x = self.spt_sum(input)
 
-class GloSptMaxPool3d(nn.Module):
-    def __init__(self):
-        super(GloSptMaxPool3d, self).__init__()
-        self.stride = 1
-        self.padding = 0
-        self.ceil_mode = False
-        self.count_include_pad = True
+        x = self.conv_p1(x)
+        x = self.bn_p1(x)
+        x = self.relu(x)
 
-    def forward(self, input):
-        input_shape = input.shape
-        kernel_size = (1,) + input_shape[3:]
-        return F.max_pool3d(input, kernel_size=kernel_size, stride=self.stride,
-                            padding=self.padding, ceil_mode=self.ceil_mode)
+        x = self.conv_t1(x)
+        x = self.bn_t1(x)
+        x = self.relu(x)
 
-class Scale3d(nn.Module):
-    def __init__(self, out_channels):
-        super(Scale3d, self).__init__()
-        self.scale = Parameter(torch.Tensor(1, out_channels, 1, 1, 1))
+        x = self.conv_p2(x)
+        x = self.sigmoid(x)
 
-    def forward(self, input):
-        return input * self.scale
+        return x
+
 
 class Bottleneck3D_000(nn.Module):
     expansion = 4
@@ -101,7 +106,7 @@ class BaselineBottleneck3D(nn.Module):
                                stride=(t_stride, 1, 1),
                                padding=(1, 0, 0), 
                                bias=False)
-        self.conv1_p = nn.Conv3d(inplanes, planes, 
+        self.conv1 = nn.Conv3d(inplanes, planes, 
                                kernel_size=(1, 1, 1), 
                                stride=(t_stride, 1, 1),
                                padding=(0, 0, 0), 
@@ -125,7 +130,7 @@ class BaselineBottleneck3D(nn.Module):
         residual = x
 
         out_t = self.conv1_t(x)
-        out_p = self.conv1_p(x)
+        out_p = self.conv1(x)
         out = 0.5 * out_t + 0.5 * out_p
         out = self.bn1(out)
         out = self.relu(out)
@@ -150,12 +155,19 @@ class AdaBottleneck3D(nn.Module):
 
     def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
         super(AdaBottleneck3D, self).__init__()
-        self.conv1 = nn.Conv3d(inplanes, planes, 
+        self.ada_m = AdaModule_v1(inplanes, planes, t_stride=t_stride)
+        self.conv1_t = nn.Conv3d(inplanes, planes, 
                                kernel_size=(3, 1, 1), 
                                stride=(t_stride, 1, 1),
                                padding=(1, 0, 0), 
                                bias=False)
+        self.conv1 = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(1, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(0, 0, 0), 
+                               bias=False)
         self.bn1 = nn.BatchNorm3d(planes)
+        # self.bn1_t = nn.BatchNorm3d(planes)
         self.conv2 = nn.Conv3d(planes, planes, 
                                kernel_size=(1, 3, 3), 
                                stride=(1, stride, stride), 
@@ -172,25 +184,19 @@ class AdaBottleneck3D(nn.Module):
                                 stride=(t_stride,1,1),
                                 padding=(1,0,0),
                                 bias=False)
-        self.scale_t = Scale3d(planes)
-        # self.scale_a = Scale3d(1)
         self.relu = nn.ReLU(inplace=True)
-        self.sigmoid = nn.Sigmoid()
         self.downsample = downsample
         self.stride = stride
 
     def forward(self, x):
         residual = x
 
-        out = self.conv1(x)
+        out_p = self.conv1(x)
+        out_t = self.conv1_t(x)
 
-        gsv = self.spt_glo_pool(x)
-        gsv = self.conv_t(gsv)
-        gsv = self.scale_t(gsv)
-        gsv = self.sigmoid(gsv)
-        # out = 2 * out * gsv
-        out = out * gsv + out
-        # out = self.scale_a(out)
+        guid = self.ada_m(x)
+
+        out = out_t + out_p * guid - out_t * guid
 
         out = self.bn1(out)
         out = self.relu(out)
@@ -289,6 +295,14 @@ class AdaResNet3D(nn.Module):
 
 def part_state_dict(state_dict, model_dict):
     pretrained_dict = {k: v for k, v in state_dict.items() if k in model_dict}
+    added_dict = {}
+    for k, v in pretrained_dict.items():
+        if ".conv1.weight" in k:
+            new_k = k[:k.index(".conv1.weight")]+'.conv1_t.weight'
+            added_dict.update({new_k: v})
+    pretrained_dict.update(added_dict)
+    # import pdb
+    # pdb.set_trace()
     pretrained_dict = inflate_state_dict(pretrained_dict, model_dict)
     model_dict.update(pretrained_dict)
     return model_dict
@@ -313,16 +327,36 @@ def inflate_state_dict(pretrained_dict, model_dict):
 
     return pretrained_dict
 
-def ada_resnet50_3d_v3(pretrained=False, feat=False, **kwargs):
+def ms_resnet26_3d(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-50 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = AdaResNet3D([Bottleneck3D_000, BaselineBottleneck3D, BaselineBottleneck3D, BaselineBottleneck3D], 
-                     [3, 4, 6, 3], feat=feat, **kwargs)
+    model = AdaResNet3D([BaselineBottleneck3D, BaselineBottleneck3D, BaselineBottleneck3D, BaselineBottleneck3D], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:
-            state_dict = model_zoo.load_url(model_urls['resnet50'])
+            pass
+            # state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
+def ada_resnet26_3d(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AdaResNet3D([AdaBottleneck3D, AdaBottleneck3D, AdaBottleneck3D, AdaBottleneck3D], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            raise ValueError("For resnet26, pretrained model must be specified.")
+            # state_dict = model_zoo.load_url(model_urls['resnet50'])
         else:
             print("Using specified pretrain model")
             state_dict = kwargs['pretrained_model']
