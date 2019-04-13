@@ -320,6 +320,26 @@ def resnet50_3d_v3(pretrained=False, feat=False, **kwargs):
             model.load_state_dict(new_state_dict)
     return model
 
+def resnet26_3d_v1(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet3D([Bottleneck3D_100, Bottleneck3D_100, Bottleneck3D_100, Bottleneck3D_100], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    # import pdb
+    # pdb.set_trace()
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            raise ValueError("pretrained model must be specified")
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
 def resnet26_3d_v3(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-50 model.
     Args:

@@ -294,15 +294,13 @@ class AdaResNet3D(nn.Module):
 
 
 def part_state_dict(state_dict, model_dict):
-    pretrained_dict = {k: v for k, v in state_dict.items() if k in model_dict}
     added_dict = {}
-    for k, v in pretrained_dict.items():
+    for k, v in state_dict.items():
         if ".conv1.weight" in k:
             new_k = k[:k.index(".conv1.weight")]+'.conv1_t.weight'
             added_dict.update({new_k: v})
-    pretrained_dict.update(added_dict)
-    # import pdb
-    # pdb.set_trace()
+    state_dict.update(added_dict)
+    pretrained_dict = {k: v for k, v in state_dict.items() if k in model_dict}
     pretrained_dict = inflate_state_dict(pretrained_dict, model_dict)
     model_dict.update(pretrained_dict)
     return model_dict
