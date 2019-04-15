@@ -9,7 +9,7 @@ from .networks.resnet_3d_new import resnet50_3d_v1, resnet101_3d_v1, resnet50_3d
 from .networks.gsv_resnet_3d_v1 import gsv_resnet50_3d_v1
 from .networks.gsv_resnet_3d_v3 import gsv_resnet50_3d_v3, gsv_resnet50_3d_v3_lite, gsv_resnet26_3d_v3, share_gsv_resnet26_3d_v3
 from .networks.ada_resnet_3d_v3 import ms_resnet26_3d, ada_resnet26_3d
-from .networks.ada_resnet_3d_v1 import ada_resnet26_3d_v1
+from .networks.ada_resnet_3d_v1 import *
 from .networks.ada_resnet_3d_v2 import ada_resnet26_3d_v2
 from .networks.gsvnet import *
 from .networks.msvnet import *
