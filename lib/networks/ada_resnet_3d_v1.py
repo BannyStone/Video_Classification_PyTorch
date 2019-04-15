@@ -139,6 +139,58 @@ class AdaModule_v1_1_1(nn.Module):
 
         return out1, out2
 
+class AdaModule_v1_2(nn.Module):
+    """
+    Compress spatial dimension to learn temporal dependency.
+    Switch between 3x1x1 and 1x1x1
+    """
+    def __init__(self, inplanes, planes, t_stride, factor=4):
+        super(AdaModule_v1_2, self).__init__()
+        self.spt_sum = GloSptMaxPool3d()
+        self.tem_sum = GloAvgPool3d()
+        self.conv_p1 = nn.Conv3d(inplanes, planes//factor,
+                                kernel_size=(1,1,1),
+                                stride=(1,1,1),
+                                padding=(0,0,0),
+                                bias=False)
+        self.bn_p1 = nn.BatchNorm3d(planes//factor)
+        self.conv_t1 = nn.Conv3d(planes//factor, planes//factor, 
+                                kernel_size=(3,1,1),
+                                stride=(t_stride,1,1), 
+                                padding=(1,0,0), 
+                                bias=False)
+        self.bn_t1 = nn.BatchNorm3d(planes//factor)
+        self.conv_p2 = nn.Conv3d(planes//factor, 2,
+                                kernel_size=(1,1,1),
+                                stride=(1,1,1),
+                                padding=(0,0,0),
+                                bias=False)
+        self.relu = nn.ReLU(inplace=True)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, input):
+        x = self.spt_sum(input)
+        # p1
+        x = self.conv_p1(x)
+        x = self.bn_p1(x)
+        x = self.relu(x)
+        # t1
+        x = self.conv_t1(x)
+        x = self.bn_t1(x)
+        x = self.relu(x)
+        # global pooling
+        x = self.tem_sum(x)
+        # p2
+        x = self.conv_p2(x)
+
+        N = x.shape[0]
+        x = x.view(N, 2) # (N, 2)
+        x = self.softmax(x)
+        out_shape = (N, 1, 1, 1, 1)
+        out1 = x[:,0].view(out_shape)
+        out2 = x[:,1].view(out_shape)
+
+        return out1, out2
 
 class Bottleneck3D_000(nn.Module):
     expansion = 4
@@ -434,6 +486,73 @@ class AdaBottleneck3D_v1_1_1(nn.Module):
 
         return out
 
+class AdaBottleneck3D_v1_2(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
+        super(AdaBottleneck3D_v1_2, self).__init__()
+        self.ada_m = AdaModule_v1_2(inplanes, planes, t_stride=t_stride, factor=4)
+        self.conv1_t = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(1, 0, 0), 
+                               bias=False)
+        self.bn1_t = nn.BatchNorm3d(planes)
+        self.conv1 = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(1, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(0, 0, 0), 
+                               bias=False)
+        self.bn1 = nn.BatchNorm3d(planes)
+        # self.bn1_t = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, 
+                               kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), 
+                               padding=(0, 1, 1), 
+                               bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, 
+                               kernel_size=1, 
+                               bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.spt_glo_pool = GloSptMaxPool3d()
+        self.conv_t = nn.Conv3d(inplanes, planes, 
+                                kernel_size=(3,1,1),
+                                stride=(t_stride,1,1),
+                                padding=(1,0,0),
+                                bias=False)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out_p = self.conv1(x)
+        out_p = self.bn1(out_p)
+        out_p = self.relu(out_p)
+        out_t = self.conv1_t(x)
+        out_t = self.bn1_t(out_t)
+        out_t = self.relu(out_t)
+
+        guid1, guid2 = self.ada_m(x)
+        out = guid1 * out_p + guid2 * out_t
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
 class AdaResNet3D(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000, feat=False, **kwargs):
@@ -612,6 +731,25 @@ def ada_resnet26_3d_v1_1_1(pretrained=False, feat=False, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
     model = AdaResNet3D([AdaBottleneck3D_v1_1_1, AdaBottleneck3D_v1_1_1, AdaBottleneck3D_v1_1_1, AdaBottleneck3D_v1_1_1], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            raise ValueError("For resnet26, pretrained model must be specified.")
+            # state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
+def ada_resnet26_3d_v1_2(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AdaResNet3D([AdaBottleneck3D_v1_2, AdaBottleneck3D_v1_2, AdaBottleneck3D_v1_2, AdaBottleneck3D_v1_2], 
                      [2, 2, 2, 2], feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:

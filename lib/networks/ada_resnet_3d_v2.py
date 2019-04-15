@@ -48,7 +48,6 @@ class AdaModule_v1(nn.Module):
 
         return out1, out2
 
-
 class Bottleneck3D_000(nn.Module):
     expansion = 4
 
