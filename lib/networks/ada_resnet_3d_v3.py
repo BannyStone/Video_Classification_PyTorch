@@ -125,6 +125,7 @@ class BaselineBottleneck3D(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
+        self.t_stride = t_stride
 
     def forward(self, x):
         residual = x

@@ -11,7 +11,8 @@ from .networks.gsv_resnet_3d_v3 import gsv_resnet50_3d_v3, gsv_resnet50_3d_v3_li
 from .networks.ada_resnet_3d_v3 import ms_resnet26_3d, ada_resnet26_3d
 from .networks.ada_resnet_3d_v1 import *
 from .networks.ada_resnet_3d_v2 import ada_resnet26_3d_v2
-from .networks.ms_resnet_3d_v1 import ms_resnet26_3d_v1, ms_resnet26_3d_v2
+from .networks.ms_resnet_3d_v1 import ms_resnet26_3d_v1, ms_resnet26_3d_v2, ms_resnet26_3d_v3, ms_resnet26_3d_v4
+from .networks.gsv_share_resnet_3d import gps_base_resnet26_3d_v1, gps_resnet26_3d_v1, gps_base_resnet26_3d_v2, gps_resnet26_3d_v2
 from .networks.gsvnet import *
 from .networks.msvnet import *
 
