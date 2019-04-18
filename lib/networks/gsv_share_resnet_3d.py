@@ -135,6 +135,7 @@ class GPSBottleneck3D_v1(nn.Module):
         self.sigmoid = nn.Sigmoid()
         self.downsample = downsample
         self.stride = stride
+        self.t_stride = t_stride
 
     def forward(self, x):
         residual = x
@@ -252,6 +253,7 @@ class GPSBottleneck3D_v2(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
+        self.t_stride = t_stride
 
     def forward(self, x):
         residual = x
