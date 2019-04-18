@@ -392,7 +392,7 @@ def gps_base_resnet26_3d_v1(pretrained=False, feat=False, **kwargs):
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = GSV_ResNet3D([GPSBaselineBottleneck3D_v1, GPSBaselineBottleneck3D_v1, GPSBaselineBottleneck3D_v1, GPSBaselineBottleneck3D_v1], 
+    model = GPS_ResNet3D([GPSBaselineBottleneck3D_v1, GPSBaselineBottleneck3D_v1, GPSBaselineBottleneck3D_v1, GPSBaselineBottleneck3D_v1], 
                      [2, 2, 2, 2], feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:
@@ -410,7 +410,7 @@ def gps_resnet26_3d_v1(pretrained=False, feat=False, **kwargs):
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = GSV_ResNet3D([GPSBottleneck3D_v1, GPSBottleneck3D_v1, GPSBottleneck3D_v1, GPSBottleneck3D_v1], 
+    model = GPS_ResNet3D([GPSBottleneck3D_v1, GPSBottleneck3D_v1, GPSBottleneck3D_v1, GPSBottleneck3D_v1], 
                      [2, 2, 2, 2], feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:
@@ -428,7 +428,7 @@ def gps_base_resnet26_3d_v2(pretrained=False, feat=False, **kwargs):
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = GSV_ResNet3D([GPSBaselineBottleneck3D_v2, GPSBaselineBottleneck3D_v2, GPSBaselineBottleneck3D_v2, GPSBaselineBottleneck3D_v2], 
+    model = GPS_ResNet3D([GPSBaselineBottleneck3D_v2, GPSBaselineBottleneck3D_v2, GPSBaselineBottleneck3D_v2, GPSBaselineBottleneck3D_v2], 
                      [2, 2, 2, 2], feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:
@@ -446,7 +446,7 @@ def gps_resnet26_3d_v2(pretrained=False, feat=False, **kwargs):
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = GSV_ResNet3D([GPSBottleneck3D_v2, GPSBottleneck3D_v2, GPSBottleneck3D_v2, GPSBottleneck3D_v2], 
+    model = GPS_ResNet3D([GPSBottleneck3D_v2, GPSBottleneck3D_v2, GPSBottleneck3D_v2, GPSBottleneck3D_v2], 
                      [2, 2, 2, 2], feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:
