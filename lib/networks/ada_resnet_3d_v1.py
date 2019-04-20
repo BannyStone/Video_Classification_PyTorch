@@ -986,6 +986,25 @@ def ada_resnet26_3d_v1_1_1(pretrained=False, feat=False, **kwargs):
             model.load_state_dict(new_state_dict)
     return model
 
+def ada_resnet50_3d_v1_1_1(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AdaResNet3D([AdaBottleneck3D_v1_1_1, AdaBottleneck3D_v1_1_1, AdaBottleneck3D_v1_1_1, AdaBottleneck3D_v1_1_1], 
+                     [3, 4, 6, 3], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            # raise ValueError("For resnet26, pretrained model must be specified.")
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
 def ada_resnet26_3d_v1_2(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-50 model.
     Args:
