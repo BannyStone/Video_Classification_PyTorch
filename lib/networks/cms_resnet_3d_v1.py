@@ -17,101 +17,6 @@ model_urls = {
     'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
 }
 
-class ResTempModule_v1(nn.Module):
-    def __init__(self, planes, factor=4):
-        super(ResTempModule_v1, self).__init__()
-        middle_channels = planes // 4
-        self.conv_p1 = nn.Conv3d(planes, middle_channels, 
-                               kernel_size=(1, 1, 1), 
-                               stride=(1, 1, 1),
-                               padding=(0, 0, 0), 
-                               bias=False)
-        self.bn_p1 = nn.BatchNorm3d(middle_channels)
-        self.conv_t1 = nn.Conv3d(middle_channels, middle_channels, 
-                               kernel_size=(3, 1, 1), 
-                               stride=(1, 1, 1),
-                               padding=(1, 0, 0), 
-                               bias=False)
-        self.bn_t1 = nn.BatchNorm3d(middle_channels)
-        self.conv_p2 = nn.Conv3d(middle_channels, planes, 
-                               kernel_size=(1, 1, 1), 
-                               stride=(1, 1, 1),
-                               padding=(0, 0, 0), 
-                               bias=False)
-        self.scale_p2 = nn.BatchNorm3d(planes)
-        self.relu = nn.ReLU(inplace=True)
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv_p1(x)
-        out = self.bn_p1(out)
-        out = self.relu(out)
-
-        out = self.conv_t1(out)
-        out = self.bn_t1(out)
-        out = self.relu(out)
-
-        out = self.conv_p2(out)
-        out = self.scale_p2(out)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
-
-class AdaModule_v1_1_1(nn.Module):
-    """
-    Compress spatial dimension to learn temporal dependency.
-    Switch between 3x1x1 and 1x1x1
-    """
-    def __init__(self, inplanes, planes, t_stride, factor=4):
-        super(AdaModule_v1_1_1, self).__init__()
-        self.spt_sum = GloSptMaxPool3d()
-        self.conv_p1 = nn.Conv3d(inplanes, planes//factor,
-                                kernel_size=(1,1,1),
-                                stride=(1,1,1),
-                                padding=(0,0,0),
-                                bias=False)
-        self.bn_p1 = nn.BatchNorm3d(planes//factor)
-        self.conv_t1 = nn.Conv3d(planes//factor, planes//factor, 
-                                kernel_size=(3,1,1),
-                                stride=(t_stride,1,1), 
-                                padding=(1,0,0), 
-                                bias=False)
-        self.bn_t1 = nn.BatchNorm3d(planes//factor)
-        self.conv_p2 = nn.Conv3d(planes//factor, 2*planes,
-                                kernel_size=(1,1,1),
-                                stride=(1,1,1),
-                                padding=(0,0,0),
-                                bias=False)
-        self.relu = nn.ReLU(inplace=True)
-        self.softmax = nn.Softmax(dim=1)
-
-    def forward(self, input):
-        x = self.spt_sum(input)
-        # p1
-        x = self.conv_p1(x)
-        x = self.bn_p1(x)
-        x = self.relu(x)
-        # t1
-        x = self.conv_t1(x)
-        x = self.bn_t1(x)
-        x = self.relu(x)
-        # p2
-        x = self.conv_p2(x)
-        # x = self.bn_t1(x)# (N, 2C, T, 1, 1)
-        N, C, T, _, __ = x.shape
-        C //= 2
-        x = x.view(N, 2, -1) # (N, 2, CT)
-        x = self.softmax(x)
-        out_shape = (N, C, T, 1, 1)
-        out1 = x[:,0,:].view(out_shape)
-        out2 = x[:,1,:].view(out_shape)
-
-        return out1, out2
-
-
 class Bottleneck3D_000(nn.Module):
     expansion = 4
 
@@ -151,23 +56,22 @@ class Bottleneck3D_000(nn.Module):
 
         return out
 
-class BaselineBottleneck3D(nn.Module):
+class CMSBottleneck3D_v1(nn.Module):
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
-        super(BaselineBottleneck3D, self).__init__()
-        self.conv1 = nn.Conv3d(inplanes, planes, 
+    def __init__(self, inplanes, planes, ratio=0.5, stride=1, t_stride=1, downsample=None):
+        super(CMSBottleneck3D_v1, self).__init__()
+        self.conv1_t = nn.Conv3d(inplanes, int(planes * ratio), 
+                               kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(1, 0, 0), 
+                               bias=False)
+        self.conv1_p = nn.Conv3d(inplanes, int(planes*(1-ratio)), 
                                kernel_size=(1, 1, 1), 
                                stride=(t_stride, 1, 1),
                                padding=(0, 0, 0), 
                                bias=False)
         self.bn1 = nn.BatchNorm3d(planes)
-        self.conv1_t = nn.Conv3d(planes, planes, 
-                               kernel_size=(3, 1, 1), 
-                               stride=(1, 1, 1),
-                               padding=(1, 0, 0), 
-                               bias=False)
-        self.scale_t = nn.BatchNorm3d(planes)
         self.conv2 = nn.Conv3d(planes, planes, 
                                kernel_size=(1, 3, 3), 
                                stride=(1, stride, stride), 
@@ -185,12 +89,11 @@ class BaselineBottleneck3D(nn.Module):
     def forward(self, x):
         residual = x
 
-        out = self.conv1(x)
+        out_t = self.conv1_t(x)
+        out_p = self.conv1_p(x)
+        out = torch.cat((out_t, out_p), dim=1)
+        # out = 0.5 * out_t + 0.5 * out_p
         out = self.bn1(out)
-        inner_residual = out
-        out = self.conv1_t(out)
-        out = self.scale_t(out)
-        out += inner_residual
         out = self.relu(out)
 
         out = self.conv2(out)
@@ -208,18 +111,22 @@ class BaselineBottleneck3D(nn.Module):
 
         return out
 
-class BaselineBottleneck3D_v1(nn.Module):
+class CMSBottleneck3D_v2(nn.Module):
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
-        super(BaselineBottleneck3D_v1, self).__init__()
-        self.conv1 = nn.Conv3d(inplanes, planes, 
+    def __init__(self, inplanes, planes, ratio=0.25, stride=1, t_stride=1, downsample=None):
+        super(CMSBottleneck3D_v2, self).__init__()
+        self.conv1_t = nn.Conv3d(inplanes, int(planes * ratio), 
+                               kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(1, 0, 0), 
+                               bias=False)
+        self.conv1_p = nn.Conv3d(inplanes, int(planes*(1-ratio)), 
                                kernel_size=(1, 1, 1), 
                                stride=(t_stride, 1, 1),
                                padding=(0, 0, 0), 
                                bias=False)
         self.bn1 = nn.BatchNorm3d(planes)
-        self.rtm = ResTempModule_v1(planes, )
         self.conv2 = nn.Conv3d(planes, planes, 
                                kernel_size=(1, 3, 3), 
                                stride=(1, stride, stride), 
@@ -237,20 +144,11 @@ class BaselineBottleneck3D_v1(nn.Module):
     def forward(self, x):
         residual = x
 
-        out = self.conv1(x)
+        out_t = self.conv1_t(x)
+        out_p = self.conv1_p(x)
+        out = torch.cat((out_t, out_p), dim=1)
+        # out = 0.5 * out_t + 0.5 * out_p
         out = self.bn1(out)
-        inner_residual = out
-        # temporal modeling
-        out = self.conv1_p1(out)
-        out = self.bn_p1(out)
-        out = self.relu(out)
-        out = self.conv1_t1(out)
-        out = self.bn_t1(out)
-        out = self.relu(out)
-        out = self.conv1_p2(out)
-        out = self.scale_p2(out)
-
-        out += inner_residual
         out = self.relu(out)
 
         out = self.conv2(out)
@@ -300,11 +198,8 @@ class AdaResNet3D(nn.Module):
         for n, m in self.named_modules():
             if isinstance(m, nn.Conv3d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-            elif isinstance(m, nn.BatchNorm3d) and "scale" not in n:
+            elif isinstance(m, nn.BatchNorm3d) and "conv_t" not in n:
                 nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.BatchNorm3d) and "scale" in n:
-                nn.init.constant_(m.weight, 0)
                 nn.init.constant_(m.bias, 0)
             elif isinstance(m, Scale3d):
                 nn.init.constant_(m.scale, 0)
@@ -347,39 +242,18 @@ class AdaResNet3D(nn.Module):
         return x
 
 
-def part_state_dict(state_dict, model_dict):
-    # added_dict = {}
-    # for k, v in state_dict.items():
-    #     if ".conv1." in k:
-    #         if ".conv1.weight" in k:
-    #             new_k = k[:k.index(".conv1.weight")]+'.conv1_t.weight'
-    #             added_dict.update({new_k: v})
-    #         elif ".conv1.bias" in k:
-    #             new_k = k[:k.index(".conv1.bias")]+'.conv1_t.bias'
-    #             added_dict.update({new_k: v})
-    #         else:
-    #             raise ValueError("Invalid param or buffer for Conv Layer")
-    #     elif ".bn1." in k:
-    #         if ".bn1.weight" in k:
-    #             new_k = k[:k.index(".bn1.weight")]+'.bn1_t.weight'
-    #             added_dict.update({new_k: v})
-    #         elif ".bn1.bias" in k:
-    #             new_k = k[:k.index(".bn1.bias")]+'.bn1_t.bias'
-    #             added_dict.update({new_k: v})
-    #         elif ".bn1.running_mean" in k:
-    #             new_k = k[:k.index(".bn1.running_mean")]+'.bn1_t.running_mean'
-    #             added_dict.update({new_k: v})
-    #         elif ".bn1.running_var" in k:
-    #             new_k = k[:k.index(".bn1.running_var")]+'.bn1_t.running_var'
-    #             added_dict.update({new_k: v})
-    #         elif ".bn1.num_batches_tracked" in k:
-    #             new_k = k[:k.index(".bn1.num_batches_tracked")]+'.bn1_t.num_batches_tracked'
-    #             added_dict.update({new_k: v})
-    #         else:
-    #             raise ValueError("Invalid param or buffer for BN Layer")
+def part_state_dict(state_dict, model_dict, ratio=0.5):
+    added_dict = {}
+    for k, v in state_dict.items():
+        if ".conv1.weight" in k:
+            out_channels = v.shape[0]
+            slice_index = int(out_channels*ratio)
+            new_k = k[:k.index(".conv1.weight")]+'.conv1_t.weight'
+            added_dict.update({new_k: v[:slice_index,...]})
+            new_k = k[:k.index(".conv1.weight")]+'.conv1_p.weight'
+            added_dict.update({new_k: v[slice_index:,...]})
 
-
-    # state_dict.update(added_dict)
+    state_dict.update(added_dict)
     pretrained_dict = {k: v for k, v in state_dict.items() if k in model_dict}
     pretrained_dict = inflate_state_dict(pretrained_dict, model_dict)
     model_dict.update(pretrained_dict)
@@ -405,21 +279,40 @@ def inflate_state_dict(pretrained_dict, model_dict):
 
     return pretrained_dict
 
-def ada_resnet26_3d_v4(pretrained=False, feat=False, **kwargs):
+def cms_resnet26_3d_v1(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-50 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = AdaResNet3D([BaselineBottleneck3D, BaselineBottleneck3D, BaselineBottleneck3D, BaselineBottleneck3D], 
+    model = AdaResNet3D([CMSBottleneck3D_v1, CMSBottleneck3D_v1, CMSBottleneck3D_v1, CMSBottleneck3D_v1], 
                      [2, 2, 2, 2], feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:
-            raise ValueError("For resnet26, pretrained model must be specified.")
+            pass
             # state_dict = model_zoo.load_url(model_urls['resnet50'])
         else:
             print("Using specified pretrain model")
             state_dict = kwargs['pretrained_model']
         if feat:
-            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratio=0.5)
+            model.load_state_dict(new_state_dict)
+    return model
+
+def cms_resnet26_3d_v2(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AdaResNet3D([CMSBottleneck3D_v2, CMSBottleneck3D_v2, CMSBottleneck3D_v2, CMSBottleneck3D_v2], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            pass
+            # state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratio=0.25)
             model.load_state_dict(new_state_dict)
     return model

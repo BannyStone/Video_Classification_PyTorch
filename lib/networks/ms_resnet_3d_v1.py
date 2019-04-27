@@ -230,6 +230,64 @@ class BaselineBottleneck3D_v3(nn.Module):
 
         return out
 
+class BaselineBottleneck3D_v3_1(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
+        super(BaselineBottleneck3D_v3_1, self).__init__()
+        self.conv1_t = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(1, 0, 0), 
+                               bias=False)
+        # self.conv1 = nn.Conv3d(inplanes, planes, 
+        #                        kernel_size=(1, 1, 1), 
+        #                        stride=(t_stride, 1, 1),
+        #                        padding=(0, 0, 0), 
+        #                        bias=False)
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, 
+                               kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), 
+                               padding=(0, 1, 1), 
+                               bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, 
+                               kernel_size=1, 
+                               bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+        self.t_stride = t_stride
+
+    def forward(self, x):
+        residual = x
+
+        out_t = self.conv1_t(x)
+        weight_p = self.conv1_t.weight.mean(dim=2, keepdim=True)
+        out_p = F.conv3d(x, weight_p, self.conv1_t.bias, (self.t_stride,1,1),
+                        (0,0,0), (1,1,1), 1)
+        # out_p = self.conv1(x)
+        out = 0.5 * out_t + 0.5 * out_p
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
 class BaselineBottleneck3D_v4(nn.Module):
     expansion = 4
 
@@ -266,6 +324,239 @@ class BaselineBottleneck3D_v4(nn.Module):
 
         out_t = self.conv1_t(x)
         weight_p = self.conv1_t.weight[:,:,1:2,:,:] * 3
+        out_p = F.conv3d(x, weight_p, self.conv1_t.bias, (self.t_stride,1,1),
+                        (0,0,0), (1,1,1), 1)
+        # out_p = self.conv1(x)
+        out = 0.5 * out_t + 0.5 * out_p
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+class BaselineBottleneck3D_v4_1(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
+        super(BaselineBottleneck3D_v4_1, self).__init__()
+        self.conv1_t = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(1, 0, 0), 
+                               bias=False)
+        # self.conv1 = nn.Conv3d(inplanes, planes, 
+        #                        kernel_size=(1, 1, 1), 
+        #                        stride=(t_stride, 1, 1),
+        #                        padding=(0, 0, 0), 
+        #                        bias=False)
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, 
+                               kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), 
+                               padding=(0, 1, 1), 
+                               bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, 
+                               kernel_size=1, 
+                               bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+        self.t_stride = t_stride
+
+    def forward(self, x):
+        residual = x
+
+        out_t = self.conv1_t(x)
+        weight_p = self.conv1_t.weight[:,:,1:2,:,:]
+        out_p = F.conv3d(x, weight_p, self.conv1_t.bias, (self.t_stride,1,1),
+                        (0,0,0), (1,1,1), 1)
+        # out_p = self.conv1(x)
+        out = 0.5 * out_t + 0.5 * out_p
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+class BaselineBottleneck3D_v6(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
+        super(BaselineBottleneck3D_v6, self).__init__()
+        self.conv1_t = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(1, 0, 0), 
+                               bias=False)
+        # self.conv1 = nn.Conv3d(inplanes, planes, 
+        #                        kernel_size=(1, 1, 1), 
+        #                        stride=(t_stride, 1, 1),
+        #                        padding=(0, 0, 0), 
+        #                        bias=False)
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, 
+                               kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), 
+                               padding=(0, 1, 1), 
+                               bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, 
+                               kernel_size=1, 
+                               bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+        self.t_stride = t_stride
+
+    def forward(self, x):
+        residual = x
+
+        out_t = self.conv1_t(x)
+        weight_p, _ = self.conv1_t.weight.max(dim=2, keepdim=True)
+        weight_p *= 3
+        out_p = F.conv3d(x, weight_p, self.conv1_t.bias, (self.t_stride,1,1),
+                        (0,0,0), (1,1,1), 1)
+        # out_p = self.conv1(x)
+        out = 0.5 * out_t + 0.5 * out_p
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+class BaselineBottleneck3D_v6_1(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
+        super(BaselineBottleneck3D_v6_1, self).__init__()
+        self.conv1_t = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(1, 0, 0), 
+                               bias=False)
+        # self.conv1 = nn.Conv3d(inplanes, planes, 
+        #                        kernel_size=(1, 1, 1), 
+        #                        stride=(t_stride, 1, 1),
+        #                        padding=(0, 0, 0), 
+        #                        bias=False)
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, 
+                               kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), 
+                               padding=(0, 1, 1), 
+                               bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, 
+                               kernel_size=1, 
+                               bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+        self.t_stride = t_stride
+
+    def forward(self, x):
+        residual = x
+
+        out_t = self.conv1_t(x)
+        weight_p, _ = self.conv1_t.weight.max(dim=2, keepdim=True)
+        out_p = F.conv3d(x, weight_p, self.conv1_t.bias, (self.t_stride,1,1),
+                        (0,0,0), (1,1,1), 1)
+        # out_p = self.conv1(x)
+        out = 0.5 * out_t + 0.5 * out_p
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+class BaselineBottleneck3D_v7(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
+        super(BaselineBottleneck3D_v7, self).__init__()
+        self.conv1_t = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(1, 0, 0), 
+                               bias=False)
+        # self.conv1 = nn.Conv3d(inplanes, planes, 
+        #                        kernel_size=(1, 1, 1), 
+        #                        stride=(t_stride, 1, 1),
+        #                        padding=(0, 0, 0), 
+        #                        bias=False)
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, 
+                               kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), 
+                               padding=(0, 1, 1), 
+                               bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, 
+                               kernel_size=1, 
+                               bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+        self.t_stride = t_stride
+
+    def forward(self, x):
+        residual = x
+
+        out_t = self.conv1_t(x)
+        weight_p = self.conv1_t.weight.detach()[:,:,1:2,:,:] * 3
         out_p = F.conv3d(x, weight_p, self.conv1_t.bias, (self.t_stride,1,1),
                         (0,0,0), (1,1,1), 1)
         # out_p = self.conv1(x)
@@ -363,6 +654,66 @@ class AdaResNet3D(nn.Module):
 
         return x
 
+class BaselineBottleneck3D_v5(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
+        super(BaselineBottleneck3D_v5, self).__init__()
+        self.conv1_t = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(2, 0, 0), 
+                               bias=False,
+                               dilation=(2,1,1))
+        self.conv1 = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(1, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(0, 0, 0), 
+                               bias=False)
+        self.bn1_t = nn.BatchNorm3d(planes)
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, 
+                               kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), 
+                               padding=(0, 1, 1), 
+                               bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, 
+                               kernel_size=1, 
+                               bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out_t = self.conv1_t(x)
+        out_t = self.bn1_t(out_t)
+        out_t = self.relu(out_t)
+        out_p = self.conv1(x)
+        out_p = self.bn1(out_p)
+        out_p = self.relu(out_p)
+        out = 0.5 * out_t + 0.5 * out_p
+        # out = self.bn1(out)
+        # out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
 
 def part_state_dict(state_dict, model_dict):
     added_dict = {}
@@ -374,6 +725,44 @@ def part_state_dict(state_dict, model_dict):
             added_dict.update({new_k: v})
             new_k = k[:k.index(".conv1.weight")]+'.conv1_t2.weight'
             added_dict.update({new_k: v})
+    state_dict.update(added_dict)
+    pretrained_dict = {k: v for k, v in state_dict.items() if k in model_dict}
+    pretrained_dict = inflate_state_dict(pretrained_dict, model_dict)
+    model_dict.update(pretrained_dict)
+    return model_dict
+
+def part_state_dict_unshared_bn(state_dict, model_dict):
+    added_dict = {}
+    for k, v in state_dict.items():
+        if ".conv1." in k:
+            if ".conv1.weight" in k:
+                new_k = k[:k.index(".conv1.weight")]+'.conv1_t.weight'
+                added_dict.update({new_k: v})
+            elif ".conv1.bias" in k:
+                new_k = k[:k.index(".conv1.bias")]+'.conv1_t.bias'
+                added_dict.update({new_k: v})
+            else:
+                raise ValueError("Invalid param or buffer for Conv Layer")
+        elif ".bn1." in k:
+            if ".bn1.weight" in k:
+                new_k = k[:k.index(".bn1.weight")]+'.bn1_t.weight'
+                added_dict.update({new_k: v})
+            elif ".bn1.bias" in k:
+                new_k = k[:k.index(".bn1.bias")]+'.bn1_t.bias'
+                added_dict.update({new_k: v})
+            elif ".bn1.running_mean" in k:
+                new_k = k[:k.index(".bn1.running_mean")]+'.bn1_t.running_mean'
+                added_dict.update({new_k: v})
+            elif ".bn1.running_var" in k:
+                new_k = k[:k.index(".bn1.running_var")]+'.bn1_t.running_var'
+                added_dict.update({new_k: v})
+            elif ".bn1.num_batches_tracked" in k:
+                new_k = k[:k.index(".bn1.num_batches_tracked")]+'.bn1_t.num_batches_tracked'
+                added_dict.update({new_k: v})
+            else:
+                raise ValueError("Invalid param or buffer for BN Layer")
+
+
     state_dict.update(added_dict)
     pretrained_dict = {k: v for k, v in state_dict.items() if k in model_dict}
     pretrained_dict = inflate_state_dict(pretrained_dict, model_dict)
@@ -457,12 +846,128 @@ def ms_resnet26_3d_v3(pretrained=False, feat=False, **kwargs):
             model.load_state_dict(new_state_dict)
     return model
 
+def ms_resnet26_3d_v3_1(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AdaResNet3D([BaselineBottleneck3D_v3_1, BaselineBottleneck3D_v3_1, BaselineBottleneck3D_v3_1, BaselineBottleneck3D_v3_1], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            pass
+            # state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
 def ms_resnet26_3d_v4(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-50 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
     model = AdaResNet3D([BaselineBottleneck3D_v4, BaselineBottleneck3D_v4, BaselineBottleneck3D_v4, BaselineBottleneck3D_v4], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            pass
+            # state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
+def ms_resnet26_3d_v4_1(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AdaResNet3D([BaselineBottleneck3D_v4_1, BaselineBottleneck3D_v4_1, BaselineBottleneck3D_v4_1, BaselineBottleneck3D_v4_1], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            pass
+            # state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
+def ms_resnet26_3d_v5(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AdaResNet3D([BaselineBottleneck3D_v5, BaselineBottleneck3D_v5, BaselineBottleneck3D_v5, BaselineBottleneck3D_v5], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            pass
+            # state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict_unshared_bn(state_dict, model.state_dict())
+            # import pdb
+            # pdb.set_trace()
+            model.load_state_dict(new_state_dict)
+    return model
+
+def ms_resnet26_3d_v6(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AdaResNet3D([BaselineBottleneck3D_v6, BaselineBottleneck3D_v6, BaselineBottleneck3D_v6, BaselineBottleneck3D_v6], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            pass
+            # state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
+def ms_resnet26_3d_v6_1(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AdaResNet3D([BaselineBottleneck3D_v6_1, BaselineBottleneck3D_v6_1, BaselineBottleneck3D_v6_1, BaselineBottleneck3D_v6_1], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            pass
+            # state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
+def ms_resnet26_3d_v7(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AdaResNet3D([BaselineBottleneck3D_v7, BaselineBottleneck3D_v7, BaselineBottleneck3D_v7, BaselineBottleneck3D_v7], 
                      [2, 2, 2, 2], feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:
