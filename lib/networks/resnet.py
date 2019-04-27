@@ -10,7 +10,7 @@ from torch.nn.parameter import Parameter
 from ..modules import *
 
 
-__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet26', 'resnet50', 'resnet101',
+__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet26', 'resnet26_point', 'resnet50', 'resnet101',
            'resnet152']
 
 
@@ -100,6 +100,48 @@ class Bottleneck(nn.Module):
 
         if self.downsample is not None:
             residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+class PointBottleneck(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(PointBottleneck, self).__init__()
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
+                               padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes)
+        self.conv3 = nn.Conv2d(planes, planes * self.expansion, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        if self.downsample is None:
+            self.conv_p = nn.Conv2d(inplanes, planes * self.expansion, kernel_size=1, bias=False)
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+        else:
+            residual = self.conv_p(x)
 
         out += residual
         out = self.relu(out)
@@ -259,6 +301,14 @@ def resnet26_sc(pretrained=False, feat=False, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
     model = ResNet(SCBottleneck, [2, 2, 2, 2], feat=feat, **kwargs)
+    return model
+
+def resnet26_point(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet(PointBottleneck, [2, 2, 2, 2], feat=feat, **kwargs)
     return model
 
 def resnet50(pretrained=False, feat=False, **kwargs):
