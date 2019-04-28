@@ -288,6 +288,64 @@ class BaselineBottleneck3D_v4(nn.Module):
 
         return out
 
+class BaselineBottleneck3D_v4_1(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
+        super(BaselineBottleneck3D_v4_1, self).__init__()
+        self.conv1_t = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(1, 0, 0), 
+                               bias=False)
+        # self.conv1 = nn.Conv3d(inplanes, planes, 
+        #                        kernel_size=(1, 1, 1), 
+        #                        stride=(t_stride, 1, 1),
+        #                        padding=(0, 0, 0), 
+        #                        bias=False)
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, 
+                               kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), 
+                               padding=(0, 1, 1), 
+                               bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, 
+                               kernel_size=1, 
+                               bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+        self.t_stride = t_stride
+
+    def forward(self, x):
+        residual = x
+
+        out_t = self.conv1_t(x)
+        weight_p = self.conv1_t.weight[:,:,1:2,:,:]
+        out_p = F.conv3d(x, weight_p, self.conv1_t.bias, (self.t_stride,1,1),
+                        (0,0,0), (1,1,1), 1)
+        # out_p = self.conv1(x)
+        out = 0.5 * out_t + 0.5 * out_p
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
 class AdaResNet3D(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000, feat=False, **kwargs):
