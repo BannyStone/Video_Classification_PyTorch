@@ -293,6 +293,81 @@ class AdaResNet3D(nn.Module):
 
         return x
 
+class AdaResNet3D_8fr(nn.Module):
+
+    def __init__(self, block, layers, num_classes=1000, feat=False, **kwargs):
+        if not isinstance(block, list):
+            block = [block] * 4
+        else:
+            assert(len(block)) == 4, "Block number must be 4 for ResNet-Stype networks."
+        self.inplanes = 64
+        super(AdaResNet3D_8fr, self).__init__()
+        self.feat = feat
+        self.conv1 = nn.Conv3d(3, 64, 
+                               kernel_size=(1, 7, 7), 
+                               stride=(1, 2, 2), 
+                               padding=(0, 3, 3),
+                               bias=False)
+        self.bn1 = nn.BatchNorm3d(64)
+        self.relu = nn.ReLU(inplace=True)
+        self.maxpool = nn.MaxPool3d(kernel_size=(1, 3, 3), 
+                                    stride=(1, 2, 2), 
+                                    padding=(0, 1, 1))
+        self.layer1 = self._make_layer(block[0], 64, layers[0])
+        self.layer2 = self._make_layer(block[1], 128, layers[1], stride=2)
+        self.layer3 = self._make_layer(block[2], 256, layers[2], stride=2, t_stride=2)
+        self.layer4 = self._make_layer(block[3], 512, layers[3], stride=2, t_stride=2)
+        self.avgpool = GloAvgPool3d()
+        self.feat_dim = 512 * block[0].expansion
+        if not feat:
+            self.fc = nn.Linear(512 * block[0].expansion, num_classes)
+
+        for n, m in self.named_modules():
+            if isinstance(m, nn.Conv3d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, nn.BatchNorm3d) and "conv_t" not in n:
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, Scale3d):
+                nn.init.constant_(m.scale, 0)
+
+
+    def _make_layer(self, block, planes, blocks, stride=1, t_stride=1):
+        downsample = None
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            downsample = nn.Sequential(
+                nn.Conv3d(self.inplanes, planes * block.expansion,
+                          kernel_size=1, stride=(t_stride, stride, stride), bias=False),
+                nn.BatchNorm3d(planes * block.expansion),
+            )
+
+        layers = []
+        layers.append(block(self.inplanes, planes, stride=stride, t_stride=t_stride, downsample=downsample))
+        self.inplanes = planes * block.expansion
+        for i in range(1, blocks):
+            layers.append(block(self.inplanes, planes))
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+
+
+        x = self.avgpool(x)
+        x = x.view(x.size(0), -1)
+        if not self.feat:
+            x = self.fc(x)
+
+        return x
+
 
 def part_state_dict(state_dict, model_dict):
     added_dict = {}
@@ -337,6 +412,24 @@ def ms_resnet26_3d(pretrained=False, feat=False, **kwargs):
         if kwargs['pretrained_model'] is None:
             pass
             # state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
+def ms_resnet50_3d_8fr(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AdaResNet3D_8fr([Bottleneck3D_000, BaselineBottleneck3D, BaselineBottleneck3D, BaselineBottleneck3D], 
+                     [3, 4, 6, 3], feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
         else:
             print("Using specified pretrain model")
             state_dict = kwargs['pretrained_model']
