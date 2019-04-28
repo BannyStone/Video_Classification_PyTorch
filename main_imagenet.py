@@ -14,7 +14,7 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torchvision.models.resnet import *
 from torchvision.models.vgg import *
-from lib.networks.resnet import resnet26, resnet26_sc
+from lib.networks.resnet import resnet26, resnet26_sc, resnet26_point
 from lib.networks.gsv_resnet_2d_v3 import gsv_resnet50_2d_v3
 from lib.modules import *
 from lib.utils.tools import *
