@@ -9,6 +9,9 @@ import math
 import torch.utils.model_zoo as model_zoo
 from ..modules import *
 
+
+__all__ = ["pib_resnet26_3d_v1", "pib_resnet50_3d_slow"]
+
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
     'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
@@ -131,7 +134,7 @@ class PIBottleneck3D(nn.Module):
 
 class PIBResNet3D_8fr(nn.Module):
 
-    def __init__(self, block, layers, num_classes=1000, feat=False, **kwargs):
+    def __init__(self, block, layers, ratios, num_classes=1000, feat=False, **kwargs):
         if not isinstance(block, list):
             block = [block] * 4
         else:
@@ -149,10 +152,10 @@ class PIBResNet3D_8fr(nn.Module):
         self.maxpool = nn.MaxPool3d(kernel_size=(1, 3, 3), 
                                     stride=(1, 2, 2), 
                                     padding=(0, 1, 1))
-        self.layer1 = self._make_layer(block[0], 64, layers[0], inf_ratio=1/8)
-        self.layer2 = self._make_layer(block[1], 128, layers[1], inf_ratio=1/4, stride=2)
-        self.layer3 = self._make_layer(block[2], 256, layers[2], inf_ratio=1/2, stride=2, t_stride=2)
-        self.layer4 = self._make_layer(block[3], 512, layers[3], inf_ratio=1, stride=2, t_stride=2)
+        self.layer1 = self._make_layer(block[0], 64, layers[0], inf_ratio=ratios[0])
+        self.layer2 = self._make_layer(block[1], 128, layers[1], inf_ratio=ratios[1], stride=2)
+        self.layer3 = self._make_layer(block[2], 256, layers[2], inf_ratio=ratios[2], stride=2, t_stride=2)
+        self.layer4 = self._make_layer(block[3], 512, layers[3], inf_ratio=ratios[3], stride=2, t_stride=2)
         self.avgpool = GloAvgPool3d()
         self.feat_dim = 512 * block[0].expansion
         if not feat:
@@ -260,8 +263,9 @@ def pib_resnet26_3d_v1(pretrained=False, feat=False, **kwargs):
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
+    ratios = (1/8, 1/4, 1/2, 1)
     model = PIBResNet3D_8fr([PIBottleneck3D, PIBottleneck3D, PIBottleneck3D, PIBottleneck3D], 
-                     [2, 2, 2, 2], feat=feat, **kwargs)
+                     [2, 2, 2, 2], ratios, feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:
             pass
@@ -270,6 +274,25 @@ def pib_resnet26_3d_v1(pretrained=False, feat=False, **kwargs):
             print("Using specified pretrain model")
             state_dict = kwargs['pretrained_model']
         if feat:
-            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios=(1/8, 1/4, 1/2, 1))
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
+            model.load_state_dict(new_state_dict)
+    return model
+
+def pib_resnet50_3d_slow(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    ratios = (0, 0, 1, 1)
+    model = PIBResNet3D_8fr([PIBottleneck3D, PIBottleneck3D, PIBottleneck3D, PIBottleneck3D], 
+                     [3, 4, 6, 3], ratios, feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
             model.load_state_dict(new_state_dict)
     return model
