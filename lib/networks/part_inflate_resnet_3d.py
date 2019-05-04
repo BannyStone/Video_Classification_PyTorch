@@ -10,7 +10,7 @@ import torch.utils.model_zoo as model_zoo
 from ..modules import *
 
 
-__all__ = ["pib_resnet26_3d_v1", "pib_resnet50_3d_slow"]
+__all__ = ["pib_resnet26_3d_v1", "pib_resnet50_3d_slow", "pib_resnet26_3d_v1_1"]
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -264,6 +264,26 @@ def pib_resnet26_3d_v1(pretrained=False, feat=False, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
     ratios = (1/8, 1/4, 1/2, 1)
+    model = PIBResNet3D_8fr([PIBottleneck3D, PIBottleneck3D, PIBottleneck3D, PIBottleneck3D], 
+                     [2, 2, 2, 2], ratios, feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            pass
+            # state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
+            model.load_state_dict(new_state_dict)
+    return model
+
+def pib_resnet26_3d_v1_1(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    ratios = (1/2, 1/2, 1/2, 1/2)
     model = PIBResNet3D_8fr([PIBottleneck3D, PIBottleneck3D, PIBottleneck3D, PIBottleneck3D], 
                      [2, 2, 2, 2], ratios, feat=feat, **kwargs)
     if pretrained:
