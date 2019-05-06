@@ -19,6 +19,7 @@ from .networks.gsv_share_resnet_3d import gps_base_resnet26_3d_v1, gps_resnet26_
 from .networks.cms_resnet_3d_v1 import cms_resnet26_3d_v1, cms_resnet26_3d_v2
 from .networks.part_inflate_resnet_3d import *
 from .networks.km_resnet_3d import *
+from .networks.km_resnet_3d_new import *
 from .networks.gsvnet import *
 from .networks.msvnet import *
 
