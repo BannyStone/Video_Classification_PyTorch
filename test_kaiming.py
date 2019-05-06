@@ -16,7 +16,7 @@ import pdb
 # options
 parser = argparse.ArgumentParser(
     description="Standard video-level testing")
-parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics400', 'kinetics200'])
+parser.add_argument('dataset', type=str)
 parser.add_argument('test_list', type=str)
 parser.add_argument('weights', type=str)
 parser.add_argument('--arch', type=str, default="resnet50_3d_v1")
@@ -46,6 +46,8 @@ def main():
         num_class = 400
     elif args.dataset == 'kinetics200':
         num_class = 200
+    elif args.dataset == 'sthsth_v1':
+        num_class = 174
     else:
         raise ValueError('Unknown dataset '+args.dataset)
 
