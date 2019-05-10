@@ -3,16 +3,16 @@ python main.py \
 kinetics200 \
 data/kinetics200/kinetics200_train_list.txt \
 data/kinetics200/kinetics200_val_list.txt \
---arch km_resnet26_3d_v2 \
---dro 0.2 \
+--arch km_resnet26_3d_v2_0init_tem_reciprocal16 \
+--dro 0.4 \
 --mode 3D \
 --t_length 8 \
 --t_stride 8 \
 --epochs 70 \
 --batch-size 128 \
---lr 0.002 \
+--lr 0.01 \
 --lr_steps 40 60 \
---workers 32 \
+--workers 16 \
 --eval-freq 2 \
 --pretrained \
 --pretrained_model models/resnet26.pth \
