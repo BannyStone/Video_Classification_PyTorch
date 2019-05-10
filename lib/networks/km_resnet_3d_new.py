@@ -17,7 +17,7 @@ model_urls = {
     'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
 }
 
-__all__ = ["km_resnet50_3d_v2_0init_tem_reciprocal16"]
+__all__ = ["km_resnet50_3d_v2_0init_tem_reciprocal16", "km_resnet50_3d_v2_0init_tem_reciprocal4"]
 
 class KernelMask(nn.Module):
     """Softmax
@@ -331,6 +331,25 @@ def km_resnet50_3d_v2_0init_tem_reciprocal16(pretrained=False, feat=False, **kwa
     ratios = (1/2, 1/2, 1/2, 1/2)
     model = PIBResNet3D_8fr([KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2], 
                      [3, 4, 6, 3], ratios, temperature=1/16, feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
+            model.load_state_dict(new_state_dict)
+    return model
+
+def km_resnet50_3d_v2_0init_tem_reciprocal4(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    ratios = (1/2, 1/2, 1/2, 1/2)
+    model = PIBResNet3D_8fr([KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2], 
+                     [3, 4, 6, 3], ratios, temperature=1/4, feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:
             state_dict = model_zoo.load_url(model_urls['resnet50'])

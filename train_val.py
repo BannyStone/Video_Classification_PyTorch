@@ -129,18 +129,18 @@ def finetune_new(train_loader, model, criterion, optimizer, epoch, print_freq):
     model.train()
 
     # switch mode
-    # for n, m in model.named_modules():
-    #   if isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
-    #     # m.eval()
-    #     if "base_model.bn1" in n:
-    #       # print(n)
-    #       pass
-    #     else:
-    #       m.eval()
-
     for n, m in model.named_modules():
       if isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
+        # m.eval()
+        if "base_model.bn1" in n:
+          # print(n)
+          pass
+        else:
           m.eval()
+
+    # for n, m in model.named_modules():
+    #   if isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
+    #       m.eval()
       # if isinstance(m, nn.Dropout):
       #   m.eval()
 
