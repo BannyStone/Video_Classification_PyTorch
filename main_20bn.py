@@ -10,7 +10,7 @@ import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim
 
-from lib.dataset import VideoDataSet
+from lib.dataset import VideoDataSet, ShortVideoDataSet
 from lib.models import VideoModule
 from lib.transforms import *
 from lib.utils.tools import *
@@ -135,7 +135,7 @@ def main():
         ToTorchFormatTensor(),
         GroupNormalize(),
         ])
-    val_dataset = VideoDataSet(root_path=data_root, 
+    val_dataset = ShortVideoDataSet(root_path=data_root, 
         list_file=args.val_list,
         t_length=args.t_length,
         t_stride=args.t_stride,

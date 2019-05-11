@@ -17,7 +17,8 @@ model_urls = {
     'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
 }
 
-__all__ = ["km_resnet50_3d_v2_0init_tem_reciprocal16", "km_resnet50_3d_v2_0init_tem_reciprocal4",
+__all__ = ["km_resnet50_3d_v2_0init_tem_reciprocal16", 
+            "km_resnet50_3d_v2_0init_tem_reciprocal4",
             "km_resnet26_3d_v2_0init_tem_reciprocal16"]
 
 class KernelMask(nn.Module):

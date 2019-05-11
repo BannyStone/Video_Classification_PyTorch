@@ -253,6 +253,70 @@ class VideoDataSet(data.Dataset):
     def __len__(self):
         return len(self.video_list)
 
+class ShortVideoDataSet(VideoDataSet):
+    def __init__(self, root_path, list_file, 
+                 t_length=32, t_stride=2, num_segments=1, 
+                 image_tmpl='img_{:05d}.jpg', 
+                 transform=None, style="Dense", 
+                 phase="Train"):
+        """
+        :style: Dense, for 2D and 3D model, and Sparse for TSN model
+        :phase: Train, Val, Test
+        """
+
+        super(ShortVideoDataSet, self).__init__(root_path, 
+            list_file, t_length, t_stride, num_segments, 
+            image_tmpl, transform, style, phase)
+
+
+    def _get_val_indices(self, record):
+        """
+        get indices in val phase
+        """
+        # valid_offset_range = record.num_frames - (self.t_length - 1) * self.t_stride - 1
+        t_stride = self.t_stride
+        valid_offset_range = record.num_frames - (self.t_length - 1) * t_stride - 1
+        offset = int(valid_offset_range / 2.0)
+
+        if record.num_frames > self.t_length:
+            while(offset < 0 and t_stride > 1):
+                t_stride -= 1
+                valid_offset_range = record.num_frames - (self.t_length - 1) * t_stride - 1
+                offset = int(valid_offset_range / 2.0)
+        else:
+            t_stride = 1
+            valid_offset_range = record.num_frames - (self.t_length - 1) * t_stride - 1
+            offset = int(valid_offset_range / 2.0)
+
+        if offset < 0:
+            offset = 0
+        samples = []
+        for i in range(self.t_length):
+            samples.append(offset + i * t_stride + 1)
+        return {"dense": samples}
+
+    def _get_test_indices(self, record):
+        """
+        get indices in test phase
+        """
+        valid_offset_range = record.num_frames - (self.t_length - 1) * self.t_stride - 1
+        interval = valid_offset_range / (self.num_segments - 1)
+        offsets = []
+        for i in range(self.num_segments):
+            offset = int(i * interval)
+            if offset > valid_offset_range:
+                offset = valid_offset_range
+            if offset < 0:
+                offset = 0
+            offsets.append(offset + 1)
+        frames = []
+        for i in range(self.num_segments):
+            for j in range(self.t_length):
+                frames.append(offsets[i] + j*self.t_stride)
+                # frames.append(offsets[i]+j)
+        return {"dense": frames}
+
+
 if __name__ == "__main__":
     td = VideoDataSet(root_path="../data/kinetics400/access/kinetics_train_rgb_img_256_340/",
                                  list_file="../data/kinetics400/kinetics_train_list.txt",
