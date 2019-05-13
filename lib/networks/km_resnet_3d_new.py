@@ -19,7 +19,13 @@ model_urls = {
 
 __all__ = ["km_resnet50_3d_v2_0init_tem_reciprocal16", 
             "km_resnet50_3d_v2_0init_tem_reciprocal4",
-            "km_resnet26_3d_v2_0init_tem_reciprocal16"]
+            "km_resnet26_3d_v2_0init_tem_reciprocal16",
+            "km_resnet26_3d_v2_0init_tem_reciprocal16_pre",
+            "km_resnet26_3d_v2_1init_prod",
+            "km_resnet26_3d_v2_0init_tem_reciprocal4",
+            "km_resnet26_3d_v2_0init_tem_reciprocal64",
+            "km_resnet26_3d_v2_0init_tem_reciprocal10", 
+            "km_resnet26_3d_v2_0init_tem_reciprocal20"]
 
 class KernelMask(nn.Module):
     """Softmax
@@ -29,6 +35,38 @@ class KernelMask(nn.Module):
         assert(init in ("zeros", "ones", "normal")), "Invalid init method"
         self.temperature = temperature
         self.mask = Parameter(torch.zeros(planes, 1, 3, 1, 1))
+        if init == "ones":
+            nn.init.constant_(self.mask, 1)
+        elif init == "normal":
+            nn.init.normal_(self.mask, mean=0, std=std)
+        self.softmax = nn.Softmax(dim=2)
+
+    def forward(self):
+        return 3 * self.softmax(self.mask/self.temperature)
+
+class KernelMaskProd(nn.Module):
+    """Product
+    """
+    def __init__(self, planes, init="ones", std=0.01):
+        super(KernelMaskProd, self).__init__()
+        assert(init in ("zeros", "ones", "normal")), "Invalid init method"
+        self.mask = Parameter(torch.zeros(planes, 1, 3, 1, 1))
+        if init == "ones":
+            nn.init.constant_(self.mask, 1)
+        elif init == "normal":
+            nn.init.normal_(self.mask, mean=0, std=std)
+
+    def forward(self):
+        return self.mask
+
+class KernelMaskPre(nn.Module):
+    """Softmax
+    """
+    def __init__(self, inplanes, temperature=1, init="zeros", std=0.01):
+        super(KernelMaskPre, self).__init__()
+        assert(init in ("zeros", "ones", "normal")), "Invalid init method"
+        self.temperature = temperature
+        self.mask = Parameter(torch.zeros(1, inplanes, 3, 1, 1))
         if init == "ones":
             nn.init.constant_(self.mask, 1)
         elif init == "normal":
@@ -165,8 +203,64 @@ class KMBottleneck3D_v2(nn.Module):
         if self.ratio != 0:
             km = self.km()
             if km.device == torch.device(0):
-                # pass
+                pass
                 print("output", km[0].view(-1))
+                # print("mask", self.km.mask[0].view(-1))
+            weight = torch.cat([self.conv1_t.weight,]*3, dim=2) / 3
+            out_t = F.conv3d(x, km * weight, self.conv1_t.bias, (self.t_stride,1,1),
+                        (1, 0, 0), (1, 1, 1), 1)
+        if self.ratio != 1:
+            out_p = self.conv1_p(x)
+        
+        if self.ratio == 0:
+            out = out_p
+        elif self.ratio == 1:
+            out = out_t
+        else:
+            out = torch.cat((out_t, out_p), dim=1)
+
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+class KMBottleneck3D_v2_prod(KMBottleneck3D_v2):
+    def __init__(self, inplanes, planes, temperature=1, ratio=0.5, stride=1, t_stride=1, downsample=None):
+        super(KMBottleneck3D_v2_prod, self).__init__(inplanes, planes, temperature, ratio, stride, t_stride, downsample)
+        t_channels = int(planes*ratio)
+        p_channels = int(planes*(1-ratio))
+        if t_channels != 0:
+            self.km = KernelMaskProd(t_channels)
+
+class KMBottleneck3D_v2_pre(KMBottleneck3D_v2):
+    def __init__(self, inplanes, planes, temperature=1, ratio=0.5, stride=1, t_stride=1, downsample=None):
+        super(KMBottleneck3D_v2_pre, self).__init__(inplanes, planes, temperature, ratio, stride, t_stride, downsample)
+        t_channels = int(planes*ratio)
+        p_channels = int(planes*(1-ratio))
+        if t_channels != 0:
+            self.km = KernelMaskPre(inplanes, temperature=temperature)
+
+    def forward(self, x):
+        residual = x
+
+        if self.ratio != 0:
+            km = self.km()
+            if km.device == torch.device(0):
+                pass
+                print("output", km[0,0,...].view(-1))
                 # print("mask", self.km.mask[0].view(-1))
             weight = torch.cat([self.conv1_t.weight,]*3, dim=2) / 3
             out_t = F.conv3d(x, km * weight, self.conv1_t.bias, (self.t_stride,1,1),
@@ -408,6 +502,120 @@ def km_resnet26_3d_v2_0init_tem_reciprocal16(pretrained=False, feat=False, **kwa
     ratios = (1, 1, 1, 1)
     model = PIBResNet3D_8fr([KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2], 
                      [2, 2, 2, 2], ratios, temperature=1/16, feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
+            model.load_state_dict(new_state_dict)
+    return model
+
+def km_resnet26_3d_v2_0init_tem_reciprocal16_pre(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    ratios = (1, 1, 1, 1)
+    model = PIBResNet3D_8fr([KMBottleneck3D_v2_pre, KMBottleneck3D_v2_pre, KMBottleneck3D_v2_pre, KMBottleneck3D_v2_pre], 
+                     [2, 2, 2, 2], ratios, temperature=1/16, feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
+            model.load_state_dict(new_state_dict)
+    return model
+
+def km_resnet26_3d_v2_1init_prod(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    ratios = (1, 1, 1, 1)
+    model = PIBResNet3D_8fr([KMBottleneck3D_v2_prod, KMBottleneck3D_v2_prod, KMBottleneck3D_v2_prod, KMBottleneck3D_v2_prod], 
+                     [2, 2, 2, 2], ratios, temperature=1/16, feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
+            model.load_state_dict(new_state_dict)
+    return model
+
+def km_resnet26_3d_v2_0init_tem_reciprocal4(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    ratios = (1, 1, 1, 1)
+    model = PIBResNet3D_8fr([KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2], 
+                     [2, 2, 2, 2], ratios, temperature=1/4, feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
+            model.load_state_dict(new_state_dict)
+    return model
+
+def km_resnet26_3d_v2_0init_tem_reciprocal64(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    ratios = (1, 1, 1, 1)
+    model = PIBResNet3D_8fr([KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2], 
+                     [2, 2, 2, 2], ratios, temperature=1/64, feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
+            model.load_state_dict(new_state_dict)
+    return model
+
+def km_resnet26_3d_v2_0init_tem_reciprocal10(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    ratios = (1, 1, 1, 1)
+    model = PIBResNet3D_8fr([KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2], 
+                     [2, 2, 2, 2], ratios, temperature=1/10, feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
+            model.load_state_dict(new_state_dict)
+    return model
+
+def km_resnet26_3d_v2_0init_tem_reciprocal20(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    ratios = (1, 1, 1, 1)
+    model = PIBResNet3D_8fr([KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2], 
+                     [2, 2, 2, 2], ratios, temperature=1/20, feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:
             state_dict = model_zoo.load_url(model_urls['resnet50'])

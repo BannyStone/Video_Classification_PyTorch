@@ -156,8 +156,9 @@ def main():
         cudnn.benchmark = True
 
     if args.resume:
-        validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
-        torch.cuda.empty_cache()
+        pass
+        # validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
+        # torch.cuda.empty_cache()
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)
