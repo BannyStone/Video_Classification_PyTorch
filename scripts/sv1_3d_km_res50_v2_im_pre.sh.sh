@@ -9,15 +9,15 @@ data/sthsth_v1/sthv1_val_list.txt \
 --mode 3D \
 --t_length 8 \
 --t_stride 8 \
---epochs 70 \
+--epochs 60 \
 --batch-size 48 \
 --lr 0.01 \
 --wd 0.0001 \
---lr_steps 40 60 \
+--lr_steps 40 50 \
 --workers 16 \
 --image_tmpl "{:05d}.jpg" \
 --pretrained \
---resume output/sthsth_v1_km_resnet50_3d_v2_0init_tem_reciprocal16_3D_length8_stride8_dropout0.4/checkpoint_20epoch.pth
+--resume output/sthsth_v1_km_resnet50_3d_v2_0init_tem_reciprocal16_3D_length8_stride8_dropout0.4/checkpoint_40epoch.pth
 
 # CUDA_VISIBLE_DEVICES=4,5,6,7 \
 # python finetune_new_20bn.py \
