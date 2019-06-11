@@ -208,6 +208,63 @@ class BaselineBottleneck3D(nn.Module):
 
         return out
 
+class ResFac(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
+        super(ResFac, self).__init__()
+        self.conv1 = nn.Conv3d(inplanes, planes, 
+                               kernel_size=(1, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(0, 0, 0), 
+                               bias=False)
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.conv1_t = nn.Conv3d(planes, planes, 
+                               kernel_size=(3, 1, 1), 
+                               stride=(1, 1, 1),
+                               padding=(1, 0, 0), 
+                               bias=False)
+        self.scale_t = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, 
+                               kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), 
+                               padding=(0, 1, 1), 
+                               bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, 
+                               kernel_size=1, 
+                               bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        inner_residual = out
+        out = self.conv1_t(out)
+        out = self.scale_t(out)
+        out += inner_residual
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
 class BaselineBottleneck3D_v1(nn.Module):
     expansion = 4
 

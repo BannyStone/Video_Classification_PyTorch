@@ -22,6 +22,9 @@ from .networks.km_resnet_3d import *
 from .networks.km_resnet_3d_new import *
 from .networks.gsvnet import *
 from .networks.msvnet import *
+from .networks.resnet_3d_nodown import *
+from .networks.resnet_3d_nopadding import *
+from .networks.traj_resnet_3d import *
 
 from .transforms import *
 
@@ -145,10 +148,15 @@ class TSN(nn.Module):
         output = output.view((self.batch_size, 
                               output.shape[0] // (self.batch_size * self.num_segments), 
                               self.num_segments, output.shape[1]))
-        if self.crop_fusion_type == 'max':
-            # pdb.set_trace()
-            output = output.max(1)[0].squeeze(1)
-        elif self.crop_fusion_type == 'avg':
-            output = output.mean(1).squeeze(1)
-        pred = output.mean(1).squeeze(1)
-        return (output, pred)
+
+        output_max = output.max(1)[0].squeeze(1)
+        pred_max = output_max.mean(1).squeeze(1)
+        output_ave = output.mean(1).squeeze(1)
+        pred_ave = output_ave.mean(1).squeeze(1)
+        # if self.crop_fusion_type == 'max':
+        #     # pdb.set_trace()
+        #     output = output.max(1)[0].squeeze(1)
+        # elif self.crop_fusion_type == 'avg':
+        #     output = output.mean(1).squeeze(1)
+        # pred = output.mean(1).squeeze(1)
+        return (output_max, pred_max, output_ave, pred_ave)

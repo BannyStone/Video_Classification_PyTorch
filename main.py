@@ -10,7 +10,7 @@ import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim
 
-from lib.dataset import VideoDataSet
+from lib.dataset import VideoDataSet, ShortVideoDataSet
 from lib.models import VideoModule
 from lib.transforms import *
 from lib.utils.tools import *
@@ -110,9 +110,17 @@ def main():
 
     # Data loading code
     ## train data
+    # train_transform = torchvision.transforms.Compose([
+    #     GroupScale(args.new_size),
+    #     GroupMultiScaleCrop(input_size=args.crop_size, scales=[1, .875, .75, .66]),
+    #     GroupRandomHorizontalFlip(),
+    #     Stack(mode=args.mode),
+    #     ToTorchFormatTensor(),
+    #     GroupNormalize(),
+    #     ])
     train_transform = torchvision.transforms.Compose([
-        GroupScale(args.new_size),
-        GroupMultiScaleCrop(input_size=args.crop_size, scales=[1, .875, .75, .66]),
+        GroupRandomScale(),
+        GroupRandomCrop(size=args.crop_size),
         GroupRandomHorizontalFlip(),
         Stack(mode=args.mode),
         ToTorchFormatTensor(),
@@ -139,7 +147,7 @@ def main():
         ToTorchFormatTensor(),
         GroupNormalize(),
         ])
-    val_dataset = VideoDataSet(root_path=data_root, 
+    val_dataset = ShortVideoDataSet(root_path=data_root, 
         list_file=args.val_list,
         t_length=args.t_length,
         t_stride=args.t_stride,
@@ -155,10 +163,11 @@ def main():
     if args.mode != "3D":
         cudnn.benchmark = True
 
+    # validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
+    # torch.cuda.empty_cache()
     if args.resume:
-        pass
-        # validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
-        # torch.cuda.empty_cache()
+        validate(val_loader, model, criterion, args.print_freq, args.start_epoch)
+        torch.cuda.empty_cache()
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)

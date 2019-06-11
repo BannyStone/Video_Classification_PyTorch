@@ -64,8 +64,6 @@ data/kinetics400/kinetics_val_list.txt \
 --input_size 256 \
 --t_length 8 \
 --t_stride 8 \
---crop_fusion_type avg \
 --dropout 0.2 \
 --workers 10 \
 --image_tmpl image_{:06d}.jpg \
---save_scores ./output/kinetics400_pib_resnet50_3d_slow_3D_length8_stride8_dropout0.2 \

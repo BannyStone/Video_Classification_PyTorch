@@ -18,35 +18,35 @@
 # --pretrained \
 # --resume output/kinetics400_gsv_resnet50_3d_v3_3D_length16_stride4_dropout0.2/checkpoint_100epoch.pth \
 # checkpoint_106epoch
-python ./test.py \
-kinetics400 \
-data/kinetics400/kinetics_val_list.txt \
-./output/kinetics400_gsv_resnet50_3d_v3_3D_length16_stride4_dropout0.2/model_best.pth \
---arch gsv_resnet50_3d_v3 \
---mode TSN+3D \
---batch_size 2 \
---num_segments 10 \
---t_length 16 \
---t_stride 4 \
---crop_fusion_type max \
---dropout 0.2 \
---workers 16 \
---image_tmpl image_{:06d}.jpg \
---save_scores ./output/kinetics400_gsv_resnet50_3d_v3_3D_length16_stride4_dropout0.2 \
-
-# python ./test_kaiming.py \
+# python ./test.py \
 # kinetics400 \
 # data/kinetics400/kinetics_val_list.txt \
 # ./output/kinetics400_gsv_resnet50_3d_v3_3D_length16_stride4_dropout0.2/model_best.pth \
 # --arch gsv_resnet50_3d_v3 \
 # --mode TSN+3D \
-# --batch_size 1 \
+# --batch_size 2 \
 # --num_segments 10 \
-# --input_size 256 \
 # --t_length 16 \
 # --t_stride 4 \
-# --crop_fusion_type avg \
+# --crop_fusion_type max \
 # --dropout 0.2 \
-# --workers 12 \
+# --workers 16 \
 # --image_tmpl image_{:06d}.jpg \
 # --save_scores ./output/kinetics400_gsv_resnet50_3d_v3_3D_length16_stride4_dropout0.2 \
+
+python ./test_kaiming.py \
+kinetics400 \
+data/kinetics400/kinetics_val_list_xlw \
+./output/kinetics400_gsv_resnet50_3d_v3_3D_length16_stride4_dropout0.2/model_best.pth \
+--arch gsv_resnet50_3d_v3 \
+--mode TSN+3D \
+--batch_size 1 \
+--num_segments 10 \
+--input_size 256 \
+--t_length 16 \
+--t_stride 4 \
+--crop_fusion_type max \
+--dropout 0.2 \
+--workers 8 \
+--image_tmpl image_{:06d}.jpg \
+--save_scores ./output/kinetics400_gsv_resnet50_3d_v3_3D_length16_stride4_dropout0.2 \

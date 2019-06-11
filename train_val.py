@@ -4,8 +4,14 @@ import logging
 
 import torch
 import torch.nn as nn
+from torch.nn.utils import clip_grad_norm
 
 from lib.utils.tools import *
+
+def set_bn_eval(m):
+    classname = m.__class__.__name__
+    if classname.find('BatchNorm') != -1:
+      m.eval()
 
 def train(train_loader, model, criterion, optimizer, epoch, print_freq):
     batch_time = AverageMeter()
@@ -128,14 +134,18 @@ def finetune_new(train_loader, model, criterion, optimizer, epoch, print_freq):
 
     model.train()
 
+    # model.apply(set_bn_eval)
+
     # switch mode
     for n, m in model.named_modules():
       if isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
         # m.eval()
         if "base_model.bn1" in n:
-          # print(n)
+          print(n)
           pass
         else:
+          for p in m.parameters():
+            p.requires_grad = False
           m.eval()
 
     # for n, m in model.named_modules():
@@ -179,6 +189,12 @@ def finetune_new(train_loader, model, criterion, optimizer, epoch, print_freq):
       # compute gradient and do SGD step
       optimizer.zero_grad()
       loss.backward()
+      # for param in model.parameters():
+      #   param.grad.data.clamp_(-1, 1)
+      total_norm = clip_grad_norm(model.parameters(), 20)
+      if total_norm > 20:
+        print("clipping gradient: {} with coef {}".format(total_norm, 20 / total_norm))
+
       optimizer.step()
 
       # measure elapsed time

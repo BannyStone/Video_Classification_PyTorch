@@ -299,20 +299,26 @@ class ShortVideoDataSet(VideoDataSet):
         """
         get indices in test phase
         """
-        valid_offset_range = record.num_frames - (self.t_length - 1) * self.t_stride - 1
+        t_stride = self.t_stride
+        valid_offset_range = record.num_frames - (self.t_length - 1) * t_stride - 1
+        while(valid_offset_range < (self.num_segments - 1) and t_stride > 1):
+            t_stride -= 1
+            valid_offset_range = record.num_frames - (self.t_length - 1) * t_stride - 1
+        if valid_offset_range < 0:
+            valid_offset_range = 0
         interval = valid_offset_range / (self.num_segments - 1)
         offsets = []
         for i in range(self.num_segments):
             offset = int(i * interval)
-            if offset > valid_offset_range:
-                offset = valid_offset_range
+            if offset > valid_offset_range+1:
+                offset = valid_offset_range+1
             if offset < 0:
                 offset = 0
             offsets.append(offset + 1)
         frames = []
         for i in range(self.num_segments):
             for j in range(self.t_length):
-                frames.append(offsets[i] + j*self.t_stride)
+                frames.append(offsets[i] + j * t_stride)
                 # frames.append(offsets[i]+j)
         return {"dense": frames}
 

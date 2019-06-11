@@ -19,9 +19,11 @@ model_urls = {
 
 __all__ = ["km_resnet50_3d_v2_0init_tem_reciprocal16", 
             "km_resnet50_3d_v2_0init_tem_reciprocal4",
+            "km_resnet50_3d_v2_0init_tem_reciprocal16_v3",
             "km_resnet26_3d_v2_0init_tem_reciprocal16",
             "km_resnet26_3d_v2_0init_tem_reciprocal16_pre",
             "km_resnet26_3d_v2_1init_prod",
+            "km_resnet26_3d_v2_sigmoid",
             "km_resnet26_3d_v2_0init_tem_reciprocal4",
             "km_resnet26_3d_v2_0init_tem_reciprocal64",
             "km_resnet26_3d_v2_0init_tem_reciprocal10", 
@@ -43,6 +45,39 @@ class KernelMask(nn.Module):
 
     def forward(self):
         return 3 * self.softmax(self.mask/self.temperature)
+
+# class KernelMaskParam(nn.Module):
+#     """Softmax
+#     """
+#     def __init__(self, planes, temperature=1, init="zeros", std=0.01):
+#         super(KernelMaskParam, self).__init__()
+#         assert(init in ("zeros", "ones", "normal")), "Invalid init method"
+#         self.temperature = temperature
+#         self.mask = Parameter(torch.zeros(planes, 1, 3, 1, 1))
+#         if init == "ones":
+#             nn.init.constant_(self.mask, 1)
+#         elif init == "normal":
+#             nn.init.normal_(self.mask, mean=0, std=std)
+#         self.softmax = nn.Softmax(dim=2)
+
+#     def forward(self):
+#         return 3 * self.softmax(self.mask/self.temperature)
+
+class KernelMaskSigmoid(nn.Module):
+    """Softmax
+    """
+    def __init__(self, planes, init="ones", std=0.01):
+        super(KernelMaskSigmoid, self).__init__()
+        assert(init in ("zeros", "ones", "normal")), "Invalid init method"
+        self.mask = Parameter(torch.zeros(planes, 1, 3, 1, 1))
+        if init == "ones":
+            nn.init.constant_(self.mask, 1)
+        elif init == "normal":
+            nn.init.normal_(self.mask, mean=0, std=std)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self):
+        return self.sigmoid(self.mask)
 
 class KernelMaskProd(nn.Module):
     """Product
@@ -123,8 +158,8 @@ class KMBottleneck3D_v1(nn.Module):
         if self.ratio != 0:
             km = self.km()
             if km.device == torch.device(0):
-                # pass
-                print("output", km[0].view(-1))
+                pass
+                # print("output", km[0].view(-1))
                 # print("mask", self.km.mask[0].view(-1))
             out_t = F.conv3d(x, km * self.conv1_t.weight, self.conv1_t.bias, (self.t_stride,1,1),
                         (1, 0, 0), (1, 1, 1), 1)
@@ -204,7 +239,88 @@ class KMBottleneck3D_v2(nn.Module):
             km = self.km()
             if km.device == torch.device(0):
                 pass
-                print("output", km[0].view(-1))
+                # print("output", km[0].view(-1))
+                # print("mask", self.km.mask[0].view(-1))
+            weight = torch.cat([self.conv1_t.weight,]*3, dim=2) / 3
+            out_t = F.conv3d(x, km * weight, self.conv1_t.bias, (self.t_stride,1,1),
+                        (1, 0, 0), (1, 1, 1), 1)
+        if self.ratio != 1:
+            out_p = self.conv1_p(x)
+        
+        if self.ratio == 0:
+            out = out_p
+        elif self.ratio == 1:
+            out = out_t
+        else:
+            out = torch.cat((out_t, out_p), dim=1)
+
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+class KMBottleneck3D_v2(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, 
+                temperature=1, ratio=0.5, 
+                stride=1, t_stride=1, downsample=None):
+        super(KMBottleneck3D_v2, self).__init__()
+        assert(ratio<=1 and ratio>=0), "Value of ratio must between 0 and 1."
+        self.ratio = ratio
+        t_channels = int(planes*ratio)
+        p_channels = int(planes*(1-ratio))
+        if t_channels != 0:
+            self.km = KernelMask(t_channels, temperature=temperature)
+            self.conv1_t = nn.Conv3d(inplanes, t_channels, 
+                               kernel_size=(1, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(0, 0, 0), 
+                               bias=False)
+        if p_channels != 0:
+            self.conv1_p = nn.Conv3d(inplanes, p_channels, 
+                               kernel_size=(1, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(0, 0, 0), 
+                               bias=False)
+
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, 
+                               kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), 
+                               padding=(0, 1, 1), 
+                               bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, 
+                               kernel_size=1, 
+                               bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+        self.t_stride = t_stride
+
+    def forward(self, x):
+        residual = x
+
+        if self.ratio != 0:
+            km = self.km()
+            if km.device == torch.device(0):
+                pass
+                # print("output", km[0].view(-1))
                 # print("mask", self.km.mask[0].view(-1))
             weight = torch.cat([self.conv1_t.weight,]*3, dim=2) / 3
             out_t = F.conv3d(x, km * weight, self.conv1_t.bias, (self.t_stride,1,1),
@@ -245,6 +361,14 @@ class KMBottleneck3D_v2_prod(KMBottleneck3D_v2):
         if t_channels != 0:
             self.km = KernelMaskProd(t_channels)
 
+class KMBottleneck3D_v2_sigmoid(KMBottleneck3D_v2):
+    def __init__(self, inplanes, planes, temperature=1, ratio=0.5, stride=1, t_stride=1, downsample=None):
+        super(KMBottleneck3D_v2_sigmoid, self).__init__(inplanes, planes, temperature, ratio, stride, t_stride, downsample)
+        t_channels = int(planes*ratio)
+        p_channels = int(planes*(1-ratio))
+        if t_channels != 0:
+            self.km = KernelMaskSigmoid(t_channels)
+
 class KMBottleneck3D_v2_pre(KMBottleneck3D_v2):
     def __init__(self, inplanes, planes, temperature=1, ratio=0.5, stride=1, t_stride=1, downsample=None):
         super(KMBottleneck3D_v2_pre, self).__init__(inplanes, planes, temperature, ratio, stride, t_stride, downsample)
@@ -260,7 +384,7 @@ class KMBottleneck3D_v2_pre(KMBottleneck3D_v2):
             km = self.km()
             if km.device == torch.device(0):
                 pass
-                print("output", km[0,0,...].view(-1))
+                # print("output", km[0,0,...].view(-1))
                 # print("mask", self.km.mask[0].view(-1))
             weight = torch.cat([self.conv1_t.weight,]*3, dim=2) / 3
             out_t = F.conv3d(x, km * weight, self.conv1_t.bias, (self.t_stride,1,1),
@@ -349,7 +473,8 @@ class PIBResNet3D_16fr(nn.Module):
 
     def forward(self, x):
         if x.device == torch.device(0):
-            print("------------------------------------")
+            pass
+            # print("------------------------------------")
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -424,7 +549,8 @@ class PIBResNet3D_8fr(nn.Module):
 
     def forward(self, x):
         if x.device == torch.device(0):
-            print("------------------------------------")
+            pass
+            # print("------------------------------------")
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -551,6 +677,25 @@ def km_resnet26_3d_v2_1init_prod(pretrained=False, feat=False, **kwargs):
             model.load_state_dict(new_state_dict)
     return model
 
+def km_resnet26_3d_v2_sigmoid(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    ratios = (1, 1, 1, 1)
+    model = PIBResNet3D_8fr([KMBottleneck3D_v2_sigmoid, KMBottleneck3D_v2_sigmoid, KMBottleneck3D_v2_sigmoid, KMBottleneck3D_v2_sigmoid], 
+                     [2, 2, 2, 2], ratios, temperature=1/16, feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
+            model.load_state_dict(new_state_dict)
+    return model
+
 def km_resnet26_3d_v2_0init_tem_reciprocal4(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-50 model.
     Args:
@@ -634,6 +779,25 @@ def km_resnet50_3d_v2_0init_tem_reciprocal16(pretrained=False, feat=False, **kwa
     """
     ratios = (1/2, 1/2, 1/2, 1/2)
     model = PIBResNet3D_8fr([KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2], 
+                     [3, 4, 6, 3], ratios, temperature=1/16, feat=feat, **kwargs)
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict(), ratios)
+            model.load_state_dict(new_state_dict)
+    return model
+
+def km_resnet50_3d_v2_0init_tem_reciprocal16_v3(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    ratios = (0, 1, 1, 1)
+    model = PIBResNet3D_16fr([KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2, KMBottleneck3D_v2], 
                      [3, 4, 6, 3], ratios, temperature=1/16, feat=feat, **kwargs)
     if pretrained:
         if kwargs['pretrained_model'] is None:

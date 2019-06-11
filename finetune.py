@@ -24,9 +24,9 @@ def main():
     global args, best_metric
 
     # specify dataset
-    if args.dataset == 'ucf101':
+    if 'ucf101' in args.dataset:
         num_class = 101
-    elif args.dataset == 'hmdb51':
+    elif 'hmdb51' in args.dataset:
         num_class = 51
     elif args.dataset == 'kinetics400':
         num_class = 400
@@ -35,7 +35,11 @@ def main():
     else:
         raise ValueError('Unknown dataset '+args.dataset)
 
-    data_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
+    if "ucf101" in args.dataset or "hmdb51" in args.dataset:
+        data_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
+                             "data/{}/access".format(args.dataset[:-3]))
+    else:
+        data_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
                              "data/{}/access".format(args.dataset))
 
     # create model

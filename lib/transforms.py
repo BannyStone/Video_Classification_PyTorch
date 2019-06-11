@@ -6,6 +6,32 @@ import numbers
 import math
 import torch
 
+class GroupRandomCrop(object):
+    def __init__(self, size):
+        if isinstance(size, numbers.Number):
+            self.size = (int(size), int(size))
+        else:
+            self.size = size
+
+    def __call__(self, img_group):
+
+        w, h = img_group[0].size
+        th, tw = self.size
+
+        out_images = list()
+
+        x1 = random.randint(0, w - tw)
+        y1 = random.randint(0, h - th)
+
+        for img in img_group:
+            assert(img.size[0] == w and img.size[1] == h)
+            if w == tw and h == th:
+                out_images.append(img)
+            else:
+                out_images.append(img.crop((x1, y1, x1 + tw, y1 + th)))
+
+        return out_images
+
 class GroupCenterCrop(object):
     def __init__(self, size):
         self.worker = torchvision.transforms.CenterCrop(size)
@@ -59,6 +85,25 @@ class GroupScale(object):
     def __call__(self, img_group):
         return [self.worker(img) for img in img_group]
 
+class GroupRandomScale(object):
+    """ Rescales the input PIL.Image to the given 'size'.
+    'size' will be the size of the smaller edge.
+    For example, if height > width, then image will be
+    rescaled to (size * height / width, size)
+    size: size of the smaller edge
+    interpolation: Default: PIL.Image.BILINEAR
+    """
+
+    def __init__(self, smallest_size=256, largest_size=320, interpolation=Image.BILINEAR):
+        self.smallest_size = smallest_size
+        self.largest_size = largest_size
+        self.interpolation = interpolation
+
+    def __call__(self, img_group):
+        size = random.randint(self.smallest_size, self.largest_size)
+        # print(size)
+        self.worker = torchvision.transforms.Resize(size, self.interpolation)
+        return [self.worker(img) for img in img_group]
 
 class GroupOverSample(object):
     def __init__(self, crop_size, scale_size=None):
@@ -113,25 +158,32 @@ class GroupOverSampleKaiming(object):
         oversample_group = list()
         for o_w, o_h in offsets:
             normal_group = list()
-            flip_group = list()
+            # flip_group = list()
             for i, img in enumerate(img_group):
                 crop = img.crop((o_w, o_h, o_w + crop_w, o_h + crop_h))
                 normal_group.append(crop)
-                flip_crop = crop.copy().transpose(Image.FLIP_LEFT_RIGHT)
-                flip_group.append(flip_crop)
+                # flip_crop = crop.copy().transpose(Image.FLIP_LEFT_RIGHT)
+                # flip_group.append(flip_crop)
 
             oversample_group.extend(normal_group)
-            oversample_group.extend(flip_group)
+            # oversample_group.extend(flip_group)
         return oversample_group
 
     def fill_fix_offset(self, image_w, image_h, crop_w, crop_h):
-        assert(crop_h  == image_h), "In Kaiming mode, crop_h should equal to image_h"
-        w_step = (image_w - crop_w) // 4
-
+        # assert(crop_h  == image_h), "In Kaiming mode, crop_h should equal to image_h"
         ret = list()
-        ret.append((0, 0))  # left
-        ret.append((4 * w_step, 0))  # right
-        ret.append((2 * w_step, 0))  # center
+        if image_w == 256:
+            h_step = (image_h - crop_h) // 4
+            ret.append((0, 0))  # upper
+            ret.append((0, 4 * h_step))  # down
+            ret.append((0, 2 * h_step))  # center
+        elif image_h == 256:
+            w_step = (image_w - crop_w) // 4
+            ret.append((0, 0))  # left
+            ret.append((4 * w_step, 0))  # right
+            ret.append((2 * w_step, 0))  # center
+        else:
+            raise ValueError("Either image_w or image_h should be equal to 256")
 
         return ret
 

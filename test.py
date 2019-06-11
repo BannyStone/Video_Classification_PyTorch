@@ -113,7 +113,7 @@ def main():
         label = label.cuda(non_blocking=True)
 
         with torch.no_grad():
-            output, pred = tsn(data)
+            output, pred, _, _ = tsn(data)
             prec1, prec5 = accuracy(pred, label, topk=(1, 5))
             top1.update(prec1.item(), data.shape[0])
             top5.update(prec5.item(), data.shape[0])
