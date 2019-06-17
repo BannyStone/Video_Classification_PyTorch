@@ -4,7 +4,7 @@ import logging
 
 import torch
 import torch.nn as nn
-from torch.nn.utils import clip_grad_norm
+from torch.nn.utils import clip_grad_norm_
 
 from lib.utils.tools import *
 
@@ -44,6 +44,12 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq):
       # compute gradient and do SGD step
       optimizer.zero_grad()
       loss.backward()
+      # clip gradients
+      total_norm = clip_grad_norm_(model.parameters(), 20)
+      # print(total_norm)
+      if total_norm > 20:
+        print("clipping gradient: {} with coef {}".format(total_norm, 20 / total_norm))
+
       optimizer.step()
 
       # measure elapsed time

@@ -111,13 +111,13 @@ def main():
 
     ## test data
     test_transform = torchvision.transforms.Compose([
-        GroupScale([256,340]),
+        GroupScale(256),
         GroupOverSampleKaiming(args.input_size),
         Stack(mode=args.mode),
         ToTorchFormatTensor(),
         GroupNormalize(),
         ])
-    test_dataset = ShortVideoDataSet(
+    test_dataset = VideoDataSet(
         root_path=data_root, 
         list_file=args.test_list,
         t_length=args.t_length,
