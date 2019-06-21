@@ -117,7 +117,7 @@ def main():
         ToTorchFormatTensor(),
         GroupNormalize(),
         ])
-    test_dataset = VideoDataSet(
+    test_dataset = ShortVideoDataSet(
         root_path=data_root, 
         list_file=args.test_list,
         t_length=args.t_length,

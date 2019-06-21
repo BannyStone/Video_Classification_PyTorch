@@ -42,7 +42,7 @@ class CorrTrajBlock(nn.Module):
 		width = input.shape[4]
 		# select template frame
 		## Plan1: Select 1st frame
-		template_d = input[:,:,0,:,:].view(-1, self.input_dim, height*width) #[N,D,HW]
+		template_d = input[:,:,0,:,:].view(batch_size, self.input_dim, height*width) #[N,D,HW]
 		# reduce template channel dimension
 		template_p = self.bn_reduce_dim(self.conv_reduce_dim(template_d)) #[N,P,HW]
 		# Adaptive Sampling for Trajectory Starting Points
