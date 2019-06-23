@@ -3,8 +3,11 @@ Modify the original file to make the class support feature extraction
 """
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import math
 import torch.utils.model_zoo as model_zoo
+
+__all__ = ['resnet50_3d_v3','resnet26_3d_v3','resnet101_3d_v1']
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -14,150 +17,19 @@ model_urls = {
     'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
 }
 
+class GloAvgPool3d(nn.Module):
+    def __init__(self):
+        super(GloAvgPool3d, self).__init__()
+        self.stride = 1
+        self.padding = 0
+        self.ceil_mode = False
+        self.count_include_pad = True
 
-def conv1x3x3(in_planes, out_planes, stride=1, t_stride=1):
-    """1x3x3 convolution with padding"""
-    return nn.Conv3d(in_planes, out_planes, kernel_size=(1, 3, 3),
-                     stride=(t_stride, stride, stride),
-                     padding=(0, 1, 1), bias=False)
-
-def conv3x1x1(in_planes, out_planes, stride=1, t_stride=1):
-    """3x1x1 convolution with padding"""
-    return nn.Conv3d(in_planes, out_planes, kernel_size=(3, 1, 1),
-                     stride=(t_stride, stride, stride),
-                     padding=(1, 0, 0), bias=False)
-
-
-class BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
-        super(BasicBlock, self).__init__()
-        # 1x3x3 conv
-        self.conv1 = conv1x3x3(inplanes, planes, stride=stride, t_stride=t_stride)
-        self.bn1 = nn.BatchNorm3d(planes)
-        self.relu = nn.ReLU(inplace=True)
-        # 1x3x3 conv
-        self.conv2 = conv1x3x3(planes, planes)
-        self.bn2 = nn.BatchNorm3d(planes)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
-
-class BasicBlockSTF_Plain(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
-        super(BasicBlockSTF_Plain, self).__init__()
-        # 1x3x3 conv
-        self.conv1 = conv1x3x3(inplanes, planes, stride=stride, t_stride=t_stride)
-        self.bn1 = nn.BatchNorm3d(planes)
-        self.relu = nn.ReLU(inplace=True)
-        # 3x1x1 conv
-        self.conv1_2 = conv3x1x1(planes, planes)
-        self.bn1_2 = nn.BatchNorm3d(planes)
-        # 1x3x3 conv
-        self.conv2 = conv1x3x3(planes, planes)
-        self.bn2 = nn.BatchNorm3d(planes)
-        # 3x1x1 conv
-        self.conv2_2 = conv3x1x1(planes, planes)
-        self.bn2_2 = nn.BatchNorm3d(planes)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv1_2(out)
-        out = self.bn1_2(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-
-        out = self.relu(out)
-        out = self.conv2_2(out)
-        out = self.bn2_2(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
-
-class BasicBlockSTF_Residual(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
-        super(BasicBlockSTF_Residual, self).__init__()
-        # 1x3x3 conv
-        self.conv1 = conv1x3x3(inplanes, planes, stride=stride, t_stride=t_stride)
-        self.bn1 = nn.BatchNorm3d(planes)
-        self.relu = nn.ReLU(inplace=True)
-        # 3x1x1 conv
-        self.conv1_2 = conv3x1x1(planes, planes)
-        self.bn1_2 = nn.BatchNorm3d(planes)
-        # 1x3x3 conv
-        self.conv2 = conv1x3x3(planes, planes)
-        self.bn2 = nn.BatchNorm3d(planes)
-        # 3x1x1 conv
-        self.conv2_2 = conv3x1x1(planes, planes)
-        self.bn2_2 = nn.BatchNorm3d(planes)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out_1 = self.conv1_2(out)
-        out_1 = self.bn1_2(out_1)
-        out_1 = self.relu(out_1)
-
-        out_2 = out + out_1
-
-        out_2 = self.conv2(out_2)
-        out_2 = self.bn2(out_2)
-
-        out_3 = self.relu(out_2)
-        out_3 = self.conv2_2(out_3)
-        out_3 = self.bn2_2(out_3)
-
-        out_4 = out_2 + out_3
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out_4 += residual
-        out_4 = self.relu(out_4)
-
-        return out_4
+    def forward(self, input):
+        input_shape = input.shape
+        kernel_size = input_shape[2:]
+        return F.avg_pool3d(input, kernel_size, self.stride,
+                            self.padding, self.ceil_mode, self.count_include_pad)
 
 class Bottleneck3D_100(nn.Module):
     expansion = 4
@@ -172,6 +44,49 @@ class Bottleneck3D_100(nn.Module):
                                stride=(1, stride, stride), padding=(0, 1, 1), bias=False)
         self.bn2 = nn.BatchNorm3d(planes)
         self.conv3 = nn.Conv3d(planes, planes * self.expansion, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm3d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+class Bottleneck3D_101(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, t_stride=1, downsample=None):
+        super(Bottleneck3D_101, self).__init__()
+        self.conv1 = nn.Conv3d(inplanes, planes, kernel_size=(3, 1, 1), 
+                               stride=(t_stride, 1, 1),
+                               padding=(1, 0, 0), bias=False)
+        self.bn1 = nn.BatchNorm3d(planes)
+        self.conv2 = nn.Conv3d(planes, planes, kernel_size=(1, 3, 3), 
+                               stride=(1, stride, stride), padding=(0, 1, 1), bias=False)
+        self.bn2 = nn.BatchNorm3d(planes)
+        self.conv3 = nn.Conv3d(planes, planes * self.expansion, kernel_size=(3, 1, 1), 
+                                stride=1,
+                                padding=(1, 0, 0),
+                                bias=False)
         self.bn3 = nn.BatchNorm3d(planes * self.expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
@@ -241,7 +156,7 @@ class Bottleneck3D_000(nn.Module):
 
 class ResNet3D(nn.Module):
 
-    def __init__(self, block, layers, num_classes=1000, feat=False, lite=False, **kwargs):
+    def __init__(self, block, layers, num_classes=1000, feat=False, **kwargs):
         if not isinstance(block, list):
             block = [block] * 4
         else:
@@ -256,10 +171,10 @@ class ResNet3D(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1))
         self.layer1 = self._make_layer(block[0], 64, layers[0])
-        self.layer2 = self._make_layer(block[1], 128, layers[1], stride=2)
-        self.layer3 = self._make_layer(block[2], 256, layers[2], stride=2, t_stride=2 if not lite else 1)
+        self.layer2 = self._make_layer(block[1], 128, layers[1], stride=2, t_stride=2)
+        self.layer3 = self._make_layer(block[2], 256, layers[2], stride=2, t_stride=2)
         self.layer4 = self._make_layer(block[3], 512, layers[3], stride=2, t_stride=2)
-        self.avgpool = nn.AvgPool3d(kernel_size=(4, 7, 7), stride=1)
+        self.avgpool = GloAvgPool3d()
         self.feat_dim = 512 * block[0].expansion
         if not feat:
             self.fc = nn.Linear(512 * block[0].expansion, num_classes)
@@ -268,10 +183,7 @@ class ResNet3D(nn.Module):
             if isinstance(m, nn.Conv3d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
             elif isinstance(m, nn.BatchNorm3d):
-                if block[0] is BasicBlockSTF_Residual and "_2" in n:
-                    nn.init.constant_(m.weight, 0)
-                else:
-                    nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
     def _make_layer(self, block, planes, blocks, stride=1, t_stride=1):
@@ -301,6 +213,7 @@ class ResNet3D(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
+
 
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
@@ -337,59 +250,27 @@ def inflate_state_dict(pretrained_dict, model_dict):
 
     return pretrained_dict
 
-def resnet18_2d(pretrained=False, feat=False, **kwargs):
-    """Constructs a ResNet-18 model.
+def resnet50_3d_v1(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet3D(BasicBlock, [2, 2, 2, 2], feat=feat, **kwargs)
+    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_100, Bottleneck3D_101, Bottleneck3D_101], 
+                     [3, 4, 6, 3], feat=feat, **kwargs)
+    # import pdb
+    # pdb.set_trace()
     if pretrained:
-        state_dict = model_zoo.load_url(model_urls['resnet18'])
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
         if feat:
             new_state_dict = part_state_dict(state_dict, model.state_dict())
             model.load_state_dict(new_state_dict)
     return model
 
-def resnet18_3d_plain(pretrained=False, feat=False, **kwargs):
-    """Constructs a ResNet-18 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet3D(BasicBlockSTF_Plain, [2, 2, 2, 2], feat=feat, **kwargs)
-    if pretrained:
-        state_dict = model_zoo.load_url(model_urls['resnet18'])
-        if feat:
-            new_state_dict = part_state_dict(state_dict, model.state_dict())
-            model.load_state_dict(new_state_dict)
-    return model
-
-def resnet18_3d_residual(pretrained=False, feat=False, **kwargs):
-    """Constructs a ResNet-18 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet3D(BasicBlockSTF_Plain, [2, 2, 2, 2], feat=feat, **kwargs)
-    if pretrained:
-        state_dict = model_zoo.load_url(model_urls['resnet18'])
-        if feat:
-            new_state_dict = part_state_dict(state_dict, model.state_dict())
-            model.load_state_dict(new_state_dict)
-    return model
-
-def resnet34_3d(pretrained=False, feat=False, **kwargs):
-    """Constructs a ResNet-34 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet3D(BasicBlockSTF_Residual, [3, 4, 6, 3], feat=feat, **kwargs)
-    if feat:
-        state_dict = part_state_dict(model_zoo.load_url(model_urls['resnet34']), model.state_dict())
-    if pretrained:
-        model.load_state_dict(state_dict)
-    return model
-
-
-def resnet50_3d(pretrained=False, feat=False, **kwargs):
+def resnet50_3d_v2(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-50 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
@@ -409,41 +290,82 @@ def resnet50_3d(pretrained=False, feat=False, **kwargs):
             model.load_state_dict(new_state_dict)
     return model
 
-def resnet50_3d_lite(pretrained=False, feat=False, **kwargs):
+def resnet50_3d_v3(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-50 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_100], 
-                     [3, 4, 6, 3], feat=feat, lite=True, **kwargs)
+    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_100, Bottleneck3D_100, Bottleneck3D_100], 
+                     [3, 4, 6, 3], feat=feat, **kwargs)
+    # import pdb
+    # pdb.set_trace()
     if pretrained:
-        state_dict = model_zoo.load_url(model_urls['resnet50'])
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
         if feat:
             new_state_dict = part_state_dict(state_dict, model.state_dict())
             model.load_state_dict(new_state_dict)
     return model
 
-# def resnet101(pretrained=False, feat=False, **kwargs):
-#     """Constructs a ResNet-101 model.
-#     Args:
-#         pretrained (bool): If True, returns a model pre-trained on ImageNet
-#     """
-#     model = ResNet(Bottleneck, [3, 4, 23, 3], feat=feat, **kwargs)
-#     if feat:
-#         state_dict = part_state_dict(model_zoo.load_url(model_urls['resnet101']), model.state_dict())
-#     if pretrained:
-#         model.load_state_dict(state_dict)
-#     return model
+def resnet26_3d_v1(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet3D([Bottleneck3D_100, Bottleneck3D_100, Bottleneck3D_100, Bottleneck3D_100], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    # import pdb
+    # pdb.set_trace()
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            raise ValueError("pretrained model must be specified")
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
 
+def resnet26_3d_v3(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_100, Bottleneck3D_100, Bottleneck3D_100], 
+                     [2, 2, 2, 2], feat=feat, **kwargs)
+    # import pdb
+    # pdb.set_trace()
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            raise ValueError("pretrained model must be specified")
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
 
-# def resnet152(pretrained=False, feat=False, **kwargs):
-#     """Constructs a ResNet-152 model.
-#     Args:
-#         pretrained (bool): If True, returns a model pre-trained on ImageNet
-#     """
-#     model = ResNet(Bottleneck, [3, 8, 36, 3], feat=feat, **kwargs)
-#     if feat:
-#         state_dict = part_state_dict(model_zoo.load_url(model_urls['resnet152']), model.state_dict())
-#     if pretrained:
-#         model.load_state_dict(state_dict)
-#     return model
+def resnet101_3d_v1(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet3D([Bottleneck3D_000, Bottleneck3D_100, Bottleneck3D_101, Bottleneck3D_101], 
+                     [3, 4, 23, 3], feat=feat, **kwargs)
+    # import pdb
+    # pdb.set_trace()
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet101'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model

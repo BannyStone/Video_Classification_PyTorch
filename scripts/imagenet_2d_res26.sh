@@ -12,4 +12,3 @@ placeholder \
 --workers 20 \
 --weight-decay 0.0001 \
 --eval-freq 1 \
---resume output/imagenet_resnet26_3D_length32_stride2_dropout0.2/checkpoint_30epoch.pth \

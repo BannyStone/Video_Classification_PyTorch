@@ -16,7 +16,7 @@ from lib.transforms import *
 from lib.utils.tools import *
 from lib.opts import args
 
-from train_val import train, validate, finetune
+from train_val import train, validate, finetune_fc
 
 best_metric = 0
 
@@ -134,7 +134,7 @@ def main():
         adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)
 
         # train for one epoch
-        finetune(train_loader, model, criterion, optimizer, epoch, args.print_freq)
+        finetune_fc(train_loader, model, criterion, optimizer, epoch, args.print_freq)
 
         # evaluate on validation set
         if (epoch + 1) % args.eval_freq == 0 or epoch == args.epochs - 1:

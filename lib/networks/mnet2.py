@@ -3,6 +3,8 @@ import torch.nn as nn
 import math
 import os
 
+__all__ = ['mnet2']
+
 def conv_bn(inp, oup, stride):
     return nn.Sequential(
         nn.Conv2d(inp, oup, kernel_size=3, stride=stride, padding=1, bias=False),

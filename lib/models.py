@@ -1,30 +1,7 @@
 import os
 from torch import nn
 from torch.nn.parameter import Parameter
-from .networks.mnet2 import mnet2
-from .networks.mnet2_3d import mnet2_3d
-from .networks.resnet import *
-from .networks.resnet_3d import *
-from .networks.resnet_3d_new import resnet50_3d_v1, resnet101_3d_v1, resnet50_3d_v2, resnet50_3d_v3, resnet26_3d_v3, resnet26_3d_v1
-from .networks.gsv_resnet_3d_v1 import gsv_resnet50_3d_v1
-from .networks.gsv_resnet_3d_v3 import gsv_resnet50_3d_v3, gsv_resnet50_3d_v3_lite, gsv_resnet26_3d_v3, share_gsv_resnet26_3d_v3
-from .networks.ada_resnet_3d_v3 import ms_resnet26_3d, ada_resnet26_3d, ms_resnet50_3d_8fr
-from .networks.ada_resnet_3d_v1 import *
-from .networks.ada_resnet_3d_v2 import ada_resnet26_3d_v2
-from .networks.ada_resnet_3d_v4 import ada_resnet26_3d_v4
-from .networks.ms_resnet_3d_v1 import ms_resnet26_3d_v1, ms_resnet26_3d_v2, ms_resnet26_3d_v3, ms_resnet26_3d_v3_1, \
-                                        ms_resnet26_3d_v4, ms_resnet26_3d_v4_1, ms_resnet26_3d_v5, \
-                                        ms_resnet26_3d_v6, ms_resnet26_3d_v6_1, ms_resnet26_3d_v7
-from .networks.gsv_share_resnet_3d import gps_base_resnet26_3d_v1, gps_resnet26_3d_v1, gps_base_resnet26_3d_v2, gps_resnet26_3d_v2
-from .networks.cms_resnet_3d_v1 import cms_resnet26_3d_v1, cms_resnet26_3d_v2
-from .networks.part_inflate_resnet_3d import *
-from .networks.km_resnet_3d import *
-from .networks.km_resnet_3d_new import *
-from .networks.gsvnet import *
-from .networks.msvnet import *
-from .networks.resnet_3d_nodown import *
-from .networks.resnet_3d_nopadding import *
-from .networks.traj_resnet_3d import *
+from .networks import *
 
 from .transforms import *
 

@@ -59,32 +59,6 @@ def main():
     # define loss function (criterion) and optimizer
     criterion = torch.nn.CrossEntropyLoss().cuda()
 
-    # scale params
-    # scale_parameters = []
-    # other_parameters = []
-    # for m in model.modules():
-    #     if isinstance(m, Scale3d):
-    #         print("scale3d")
-    #         scale_parameters.append(m.scale)
-    #     elif isinstance(m, nn.Conv3d):
-    #         # print("conv3d")
-    #         other_parameters.append(m.weight)
-    #         if m.bias is not None:
-    #             other_parameters.append(m.bias)
-    #     elif isinstance(m, nn.BatchNorm3d):
-    #         # print("batchnorm3d")
-    #         other_parameters.append(m.weight)
-    #         other_parameters.append(m.bias)
-    #     elif isinstance(m, nn.Linear):
-    #         # print("linear")
-    #         other_parameters.append(m.weight)
-    #         other_parameters.append(m.bias)
-#"weight_decay": 0
-    # optimizer = torch.optim.SGD([{"params": other_parameters},
-    #                              {"params": scale_parameters, "weight_decay": 0}],
-    #                             args.lr,
-    #                             momentum=args.momentum,
-    #                             weight_decay=args.weight_decay)
     optimizer = torch.optim.SGD(model.parameters(),
                                 args.lr,
                                 momentum=args.momentum,

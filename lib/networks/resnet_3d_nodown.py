@@ -31,18 +31,6 @@ class GloAvgPool3d(nn.Module):
         return F.avg_pool3d(input, kernel_size, self.stride,
                             self.padding, self.ceil_mode, self.count_include_pad)
 
-def conv1x3x3(in_planes, out_planes, stride=1, t_stride=1):
-    """1x3x3 convolution with padding"""
-    return nn.Conv3d(in_planes, out_planes, kernel_size=(1, 3, 3),
-                     stride=(t_stride, stride, stride),
-                     padding=(0, 1, 1), bias=False)
-
-def conv3x1x1(in_planes, out_planes, stride=1, t_stride=1):
-    """3x1x1 convolution with padding"""
-    return nn.Conv3d(in_planes, out_planes, kernel_size=(3, 1, 1),
-                     stride=(t_stride, stride, stride),
-                     padding=(1, 0, 0), bias=False)
-
 class Bottleneck3D_100(nn.Module):
     expansion = 4
 

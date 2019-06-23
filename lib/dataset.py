@@ -136,27 +136,6 @@ class VideoDataSet(data.Dataset):
             return {"dense":dense_frames, "sparse":sparse_frames}
         else:
             return
-        # num_segments = self.num_segments
-        # num_segments = 3
-        # sparse_frames = []
-        # dense_frames = []
-        # average_duration = record.num_frames / num_segments
-        # offsets = [average_duration * i for i in range(num_segments)]
-        # dense_seg = randint(num_segments)
-        # for i in range(num_segments):
-        #     if i == dense_seg:
-        #         samples = self.dense_sampler(average_duration, self.t_length, self.t_stride)
-        #         samples = [sample + offsets[i] for sample in samples]
-        #         dense_frames.extend(samples)
-        #         dense_seg = -1 # set dense seg to -1 and check after sampling.
-        #     else:
-        #         samples = self.dense_sampler(average_duration, 1)
-        #         samples = [sample + offsets[i] for sample in samples]
-        #         sparse_frames.extend(samples)
-        # if self.style == "Dense":
-        #     return {"dense": dense_frames}
-        # elif self.style == "UnevenDense":
-        #     return {"dense":dense_frames, "sparse":sparse_frames}
 
     def _get_val_indices(self, record):
         """

@@ -10,7 +10,7 @@ import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim
 
-from lib.dataset import VideoDataSet, ShortVideoDataSet
+from lib.dataset import VideoDataSet
 from lib.models import VideoModule
 from lib.transforms import *
 from lib.utils.tools import *
@@ -63,32 +63,6 @@ def main():
     # define loss function (criterion) and optimizer
     criterion = torch.nn.CrossEntropyLoss().cuda()
 
-    # scale params
-    # scale_parameters = []
-    # other_parameters = []
-    # for m in model.modules():
-    #     if isinstance(m, Scale3d):
-    #         print("scale3d")
-    #         scale_parameters.append(m.scale)
-    #     elif isinstance(m, nn.Conv3d):
-    #         # print("conv3d")
-    #         other_parameters.append(m.weight)
-    #         if m.bias is not None:
-    #             other_parameters.append(m.bias)
-    #     elif isinstance(m, nn.BatchNorm3d):
-    #         # print("batchnorm3d")
-    #         other_parameters.append(m.weight)
-    #         other_parameters.append(m.bias)
-    #     elif isinstance(m, nn.Linear):
-    #         # print("linear")
-    #         other_parameters.append(m.weight)
-    #         other_parameters.append(m.bias)
-#"weight_decay": 0
-    # optimizer = torch.optim.SGD([{"params": other_parameters},
-    #                              {"params": scale_parameters, "weight_decay": 0}],
-    #                             args.lr,
-    #                             momentum=args.momentum,
-    #                             weight_decay=args.weight_decay)
     optimizer = torch.optim.SGD(model.parameters(),
                                 args.lr,
                                 momentum=args.momentum,
@@ -147,7 +121,7 @@ def main():
         ToTorchFormatTensor(),
         GroupNormalize(),
         ])
-    val_dataset = ShortVideoDataSet(root_path=data_root, 
+    val_dataset = VideoDataSet(root_path=data_root, 
         list_file=args.val_list,
         t_length=args.t_length,
         t_stride=args.t_stride,

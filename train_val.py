@@ -44,11 +44,11 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq):
       # compute gradient and do SGD step
       optimizer.zero_grad()
       loss.backward()
+
       # clip gradients
-      total_norm = clip_grad_norm_(model.parameters(), 20)
-      # print(total_norm)
-      if total_norm > 20:
-        print("clipping gradient: {} with coef {}".format(total_norm, 20 / total_norm))
+      # total_norm = clip_grad_norm_(model.parameters(), 20)
+      # if total_norm > 20:
+      #   print("clipping gradient: {} with coef {}".format(total_norm, 20 / total_norm))
 
       optimizer.step()
 
@@ -67,7 +67,7 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq):
                  data_time=data_time, loss=losses, top1=top1, 
                  top5=top5, lr=optimizer.param_groups[-1]['lr'])))
 
-def finetune(train_loader, model, criterion, optimizer, epoch, print_freq):
+def finetune_fc(train_loader, model, criterion, optimizer, epoch, print_freq):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -90,11 +90,6 @@ def finetune(train_loader, model, criterion, optimizer, epoch, print_freq):
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
-      # import pdb
-      # pdb.set_trace()
-      # print("conv1", model.state_dict()['module.base_model.conv1.weight'].view(-1)[0:3])
-      # print("fc", model.state_dict()['module.classifier.1.weight'].view(-1)[0:3])
-      # print(model.state_dict().view(-1)[0:3])
       # measure data loading time
       data_time.update(time.time() - end)
 
@@ -131,7 +126,7 @@ def finetune(train_loader, model, criterion, optimizer, epoch, print_freq):
                  data_time=data_time, loss=losses, top1=top1, 
                  top5=top5, lr=optimizer.param_groups[-1]['lr'])))
 
-def finetune_new(train_loader, model, criterion, optimizer, epoch, print_freq):
+def finetune_bn_frozen(train_loader, model, criterion, optimizer, epoch, print_freq):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
