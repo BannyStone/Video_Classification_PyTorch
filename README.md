@@ -34,10 +34,12 @@ ln -s $YOUR_KINETICS400_DATASET_VAL_DIR$ RGB_val
 Note that:
 - The reported models are trained with the Kinetics data provided by Xiaolong Wang.https://github.com/facebookresearch/video-nonlocal-net/blob/master/DATASET.md
 - In train and validation lists for all datasets, each line represents one video where the first element is the video frame directory, the second element is the number of frames and the third element is the index of class. Please prepare your own list accordingly because different video parsing method may lead to different frame numbers. We show part of Kinetics-400 train list as an example:
+```shell
 RGB_train/D32_1gwq35E 300 66
 RGB_train/-G-5CJ0JkKY 250 254
 RGB_train/4uZ27ivBl00 300 341
 RGB_train/pZP-dHUuGiA 240 369
+```
 - This code can read the image files in each video frame folder according to the image template argument *image_tmpl*, such as *image_{:06d}.jpg*.
 
 ## Training
