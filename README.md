@@ -33,22 +33,26 @@ ln -s $YOUR_KINETICS400_DATASET_VAL_DIR$ RGB_val
 ```
 Note that:
 - The reported models are trained with the Kinetics data provided by Xiaolong Wang.https://github.com/facebookresearch/video-nonlocal-net/blob/master/DATASET.md
-- In train and validation lists for all datasets, each line represents one video where the first element is the video frame directory, the second element is the number of frames and the third element is the index of class. Please prepare your own list accordingly because different video parsing method may lead to different frame numbers.
+- In train and validation lists for all datasets, each line represents one video where the first element is the video frame directory, the second element is the number of frames and the third element is the index of class. Please prepare your own list accordingly because different video parsing method may lead to different frame numbers. We show part of Kinetics-400 train list as an example:
+RGB_train/D32_1gwq35E 300 66
+RGB_train/-G-5CJ0JkKY 250 254
+RGB_train/4uZ27ivBl00 300 341
+RGB_train/pZP-dHUuGiA 240 369
 - This code can read the image files in each video frame folder according to the image template argument *image_tmpl*, such as *image_{:06d}.jpg*.
 
 ## Training
 Execute training script:
 ```Shell
-./scripts/kinetics400_3d_res50_nodown_im_pre.sh
+./scripts/kinetics400_3d_res50_slowonly_im_pre.sh
 ```
 
-We show script *kinetics400_3d_res50_nodown_im_pre.sh* here:
+We show script *kinetics400_3d_res50_slowonly_im_pre.sh* here:
 ```Shell
 python main.py \
 kinetics400 \
 data/kinetics400/kinetics_train_list_xlw \
 data/kinetics400/kinetics_val_list_xlw \
---arch resnet50_3d_nodown \
+--arch resnet50_3d_slowonly \
 --dro 0.5 \
 --mode 3D \
 --t_length 8 \
@@ -67,8 +71,8 @@ data/kinetics400/kinetics_val_list_xlw \
 python ./test_kaiming.py \
 kinetics400 \
 data/kinetics400/kinetics_val_list_xlw \
-output/kinetics400_resnet50_3d_nodown_3D_length8_stride8_dropout0.5/model_best.pth \
---arch resnet50_3d_nodown \
+output/kinetics400_resnet50_3d_slowonly_3D_length8_stride8_dropout0.5/model_best.pth \
+--arch resnet50_3d_slowonly \
 --mode TSN+3D \
 --batch_size 1 \
 --num_segments 10 \

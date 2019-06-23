@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import math
 import torch.utils.model_zoo as model_zoo
 
-__all__ = ["resnet50_3d_nodown"]
+__all__ = ["resnet50_3d_slowonly"]
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -248,7 +248,7 @@ def inflate_state_dict(pretrained_dict, model_dict):
 
     return pretrained_dict
 
-def resnet50_3d_nodown(pretrained=False, feat=False, **kwargs):
+def resnet50_3d_slowonly(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-50 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet

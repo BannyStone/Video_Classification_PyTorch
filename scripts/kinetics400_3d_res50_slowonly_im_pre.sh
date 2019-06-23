@@ -3,7 +3,7 @@ python main.py \
 kinetics400 \
 data/kinetics400/kinetics_train_list_xlw \
 data/kinetics400/kinetics_val_list_xlw \
---arch resnet50_3d_nodown \
+--arch resnet50_3d_slowonly \
 --dro 0.5 \
 --mode 3D \
 --t_length 8 \
@@ -19,8 +19,8 @@ data/kinetics400/kinetics_val_list_xlw \
 python ./test_kaiming.py \
 kinetics400 \
 data/kinetics400/kinetics_val_list_xlw \
-output/kinetics400_resnet50_3d_nodown_3D_length8_stride8_dropout0.5/model_best.pth \
---arch resnet50_3d_nodown \
+output/kinetics400_resnet50_3d_slowonly_3D_length8_stride8_dropout0.5/model_best.pth \
+--arch resnet50_3d_slowonly \
 --mode TSN+3D \
 --batch_size 1 \
 --num_segments 10 \
