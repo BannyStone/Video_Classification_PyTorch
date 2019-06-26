@@ -13,7 +13,7 @@ def set_bn_eval(m):
     if classname.find('BatchNorm') != -1:
       m.eval()
 
-def train(train_loader, model, criterion, optimizer, epoch, print_freq):
+def train(train_loader, model, criterion, optimizer, epoch, print_freq, scheduler):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -25,6 +25,7 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq):
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
+      scheduler.step()
       # measure data loading time
       data_time.update(time.time() - end)
 
@@ -45,10 +46,10 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq):
       optimizer.zero_grad()
       loss.backward()
       # clip gradients
-      total_norm = clip_grad_norm_(model.parameters(), 20)
-      # print(total_norm)
-      if total_norm > 20:
-        print("clipping gradient: {} with coef {}".format(total_norm, 20 / total_norm))
+      # total_norm = clip_grad_norm_(model.parameters(), 20)
+      # # print(total_norm)
+      # if total_norm > 20:
+      #   print("clipping gradient: {} with coef {}".format(total_norm, 20 / total_norm))
 
       optimizer.step()
 

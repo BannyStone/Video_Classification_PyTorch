@@ -4,7 +4,9 @@ import logging
 import torch
 import shutil
 
-__all__ = ['AverageMeter', 'save_checkpoint', 'adjust_learning_rate', 'accuracy']
+from bisect import bisect_right
+
+__all__ = ['WarmupMultiStepLR', 'AverageMeter', 'save_checkpoint', 'adjust_learning_rate', 'accuracy']
 
 class WarmupMultiStepLR(torch.optim.lr_scheduler._LRScheduler):
     def __init__(
@@ -43,6 +45,7 @@ class WarmupMultiStepLR(torch.optim.lr_scheduler._LRScheduler):
             elif self.warmup_method == "linear":
                 alpha = float(self.last_epoch) / self.warmup_iters
                 warmup_factor = self.warmup_factor * (1 - alpha) + alpha
+        # print(self.last_epoch)
         return [
             base_lr
             * warmup_factor

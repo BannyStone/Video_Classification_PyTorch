@@ -10,7 +10,7 @@ from torch.nn.parameter import Parameter
 from ..modules import *
 
 
-__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet26', 'resnet26_point', 'resnet50', 'resnet101',
+__all__ = ['ResNet', 'resnet18', 'resnet18_nobn', 'resnet34', 'resnet26', 'resnet26_point', 'resnet50', 'resnet101',
            'resnet152']
 
 
@@ -67,6 +67,32 @@ class BasicBlock(nn.Module):
 
         return out
 
+class BasicBlockNobn(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(BasicBlockNobn, self).__init__()
+        self.conv1 = conv3x3(inplanes, planes, stride)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(planes, planes)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
 
 class Bottleneck(nn.Module):
     expansion = 4
@@ -274,6 +300,17 @@ def resnet18(pretrained=False, feat=False, **kwargs):
         model.load_state_dict(state_dict)
     return model
 
+def resnet18_nobn(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-18 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet(BasicBlockNobn, [2, 2, 2, 2], feat=feat, **kwargs)
+    if feat:
+        state_dict = part_state_dict(model_zoo.load_url(model_urls['resnet18']), model.state_dict())
+    if pretrained:
+        model.load_state_dict(state_dict)
+    return model
 
 def resnet34(pretrained=False, feat=False, **kwargs):
     """Constructs a ResNet-34 model.

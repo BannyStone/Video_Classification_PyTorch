@@ -94,6 +94,7 @@ def main():
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
 
+
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -110,22 +111,22 @@ def main():
 
     # Data loading code
     ## train data
-    # train_transform = torchvision.transforms.Compose([
-    #     GroupScale(args.new_size),
-    #     GroupMultiScaleCrop(input_size=args.crop_size, scales=[1, .875, .75, .66]),
-    #     GroupRandomHorizontalFlip(),
-    #     Stack(mode=args.mode),
-    #     ToTorchFormatTensor(),
-    #     GroupNormalize(),
-    #     ])
     train_transform = torchvision.transforms.Compose([
-        GroupRandomScale(),
-        GroupRandomCrop(size=args.crop_size),
+        GroupScale((256,340)),
+        GroupMultiScaleCrop(input_size=args.crop_size, scales=[1, .875, .75, .66]),
         GroupRandomHorizontalFlip(),
         Stack(mode=args.mode),
         ToTorchFormatTensor(),
         GroupNormalize(),
         ])
+    # train_transform = torchvision.transforms.Compose([
+    #     GroupRandomScale(),
+    #     GroupRandomCrop(size=args.crop_size),
+    #     GroupRandomHorizontalFlip(),
+    #     Stack(mode=args.mode),
+    #     ToTorchFormatTensor(),
+    #     GroupNormalize(),
+    #     ])
     train_dataset = VideoDataSet(root_path=data_root, 
         list_file=args.train_list,
         t_length=args.t_length, 
@@ -141,13 +142,20 @@ def main():
 
     ## val data
     val_transform = torchvision.transforms.Compose([
-        GroupScale(args.new_size),
+        GroupScale((256,340)),
         GroupCenterCrop(args.crop_size),
         Stack(mode=args.mode),
         ToTorchFormatTensor(),
         GroupNormalize(),
         ])
-    val_dataset = ShortVideoDataSet(root_path=data_root, 
+    # val_transform = torchvision.transforms.Compose([
+    #     GroupScale(args.new_size),
+    #     GroupCenterCrop(args.crop_size),
+    #     Stack(mode=args.mode),
+    #     ToTorchFormatTensor(),
+    #     GroupNormalize(),
+    #     ])
+    val_dataset = VideoDataSet(root_path=data_root, 
         list_file=args.val_list,
         t_length=args.t_length,
         t_stride=args.t_stride,
@@ -160,6 +168,12 @@ def main():
         batch_size=args.batch_size, shuffle=False, 
         num_workers=args.workers, pin_memory=True)
 
+    # import pdb
+    iter_steps = [len(train_loader)*step for step in args.lr_steps]
+    # pdb.set_trace()
+
+    scheduler = WarmupMultiStepLR(optimizer, iter_steps, gamma=0.1, warmup_factor=1.0/3, warmup_iters=2500)
+
     if args.mode != "3D":
         cudnn.benchmark = True
 
@@ -170,10 +184,10 @@ def main():
         torch.cuda.empty_cache()
 
     for epoch in range(args.start_epoch, args.epochs):
-        adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)
+        # adjust_learning_rate(optimizer, args.lr, epoch, args.lr_steps)
 
         # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch, args.print_freq)
+        train(train_loader, model, criterion, optimizer, epoch, args.print_freq, scheduler)
 
         # evaluate on validation set
         if (epoch + 1) % args.eval_freq == 0 or epoch == args.epochs - 1:

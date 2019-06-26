@@ -111,7 +111,7 @@ def main():
 
     ## test data
     test_transform = torchvision.transforms.Compose([
-        GroupScale(256),
+        GroupScale((256,340)),
         GroupOverSampleKaiming(args.input_size),
         Stack(mode=args.mode),
         ToTorchFormatTensor(),

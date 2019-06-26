@@ -30,8 +30,24 @@ data/kinetics400/kinetics_val_list_xlw \
 --batch-size 96 \
 --lr 0.02 \
 --wd 0.0001 \
---lr_steps 40 80 100 \
+--lr_steps 50 80 100 \
 --workers 16 \
+# --resume output/kinetics400_resnet50_3d_nodown_3D_length8_stride8_dropout0.5/checkpoint_30epoch.pth
+
+# python ./test_kaiming.py \
+# kinetics400 \
+# data/kinetics400/kinetics_val_list_xlw \
+# output/kinetics400_resnet50_3d_nodown_3D_length8_stride8_dropout0.5/model_best.pth \
+# --arch resnet50_3d_nodown \
+# --mode TSN+3D \
+# --batch_size 1 \
+# --num_segments 10 \
+# --input_size 256 \
+# --t_length 8 \
+# --t_stride 8 \
+# --dropout 0.5 \
+# --workers 12 \
+# --image_tmpl image_{:06d}.jpg \
 
 # CUDA_LAUNCH_BLOCKING=1 \
 # CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
