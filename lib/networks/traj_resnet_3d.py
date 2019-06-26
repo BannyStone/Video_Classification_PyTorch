@@ -9,7 +9,7 @@ import torch.utils.model_zoo as model_zoo
 
 from ..modules.traj import CorrTrajBlock
 
-__all__ = ["traj_resnet50_2d_res3"]
+__all__ = ["traj_resnet50_2d_res3", "resnet50_2d"]
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -298,6 +298,26 @@ def traj_resnet50_2d_res3(pretrained=False, feat=False, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
     model = ResNet3D_res3([Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_000], 
+                     [3, 4, 6, 3], feat=feat, **kwargs)
+    # import pdb
+    # pdb.set_trace()
+    if pretrained:
+        if kwargs['pretrained_model'] is None:
+            state_dict = model_zoo.load_url(model_urls['resnet50'])
+        else:
+            print("Using specified pretrain model")
+            state_dict = kwargs['pretrained_model']
+        if feat:
+            new_state_dict = part_state_dict(state_dict, model.state_dict())
+            model.load_state_dict(new_state_dict)
+    return model
+
+def resnet50_2d(pretrained=False, feat=False, **kwargs):
+    """Constructs a ResNet-50 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet3D_nodown([Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_000, Bottleneck3D_000], 
                      [3, 4, 6, 3], feat=feat, **kwargs)
     # import pdb
     # pdb.set_trace()
