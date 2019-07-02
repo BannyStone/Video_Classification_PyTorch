@@ -25,6 +25,7 @@ from .networks.msvnet import *
 from .networks.resnet_3d_nodown import *
 from .networks.resnet_3d_nopadding import *
 from .networks.traj_resnet_3d import *
+from .networks.p2stream import *
 
 from .transforms import *
 

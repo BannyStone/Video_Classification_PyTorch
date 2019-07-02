@@ -32,7 +32,7 @@ data/kinetics400/kinetics_val_list_xlw \
 --wd 0.0001 \
 --lr_steps 50 80 100 \
 --workers 16 \
-# --resume output/kinetics400_resnet50_3d_nodown_3D_length8_stride8_dropout0.5/checkpoint_30epoch.pth
+# --resume output/kinetics400_resnet50_3d_nodown_3D_length8_stride8_dropout0.5/checkpoint_50epoch.pth
 
 # python ./test_kaiming.py \
 # kinetics400 \

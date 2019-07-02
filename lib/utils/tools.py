@@ -1,4 +1,5 @@
 import os
+import math
 import numpy as np
 import logging
 import torch
@@ -6,7 +7,7 @@ import shutil
 
 from bisect import bisect_right
 
-__all__ = ['WarmupMultiStepLR', 'AverageMeter', 'save_checkpoint', 'adjust_learning_rate', 'accuracy']
+__all__ = ['WarmupCosineLR', 'WarmupMultiStepLR', 'AverageMeter', 'save_checkpoint', 'adjust_learning_rate', 'accuracy']
 
 class WarmupMultiStepLR(torch.optim.lr_scheduler._LRScheduler):
     def __init__(
@@ -52,6 +53,48 @@ class WarmupMultiStepLR(torch.optim.lr_scheduler._LRScheduler):
             * self.gamma ** bisect_right(self.milestones, self.last_epoch)
             for base_lr in self.base_lrs
         ]
+
+class WarmupCosineLR(torch.optim.lr_scheduler._LRScheduler):
+    def __init__(
+        self,
+        optimizer,
+        iter_max,
+        eta_min,
+        warmup_factor=1.0 / 3,
+        warmup_iters=500,
+        warmup_method="linear",
+        last_epoch=-1,
+    ):
+        if warmup_method not in ("constant", "linear"):
+            raise ValueError(
+                "Only 'constant' or 'linear' warmup_method accepted"
+                "got {}".format(warmup_method)
+            )
+        self.iter_max = iter_max
+        self.eta_min = eta_min
+        self.warmup_factor = warmup_factor
+        self.warmup_iters = warmup_iters
+        self.warmup_method = warmup_method
+        super(WarmupCosineLR, self).__init__(optimizer, last_epoch)
+
+    def get_lr(self):
+        warmup_factor = 1
+        if self.last_epoch < self.warmup_iters:
+            if self.warmup_method == "constant":
+                warmup_factor = self.warmup_factor
+            elif self.warmup_method == "linear":
+                alpha = float(self.last_epoch) / self.warmup_iters
+                warmup_factor = self.warmup_factor * (1 - alpha) + alpha
+            return [
+                base_lr
+                * warmup_factor 
+                for base_lr in self.base_lrs]
+        else:
+            return [
+                self.eta_min + 0.5 * (base_lr - self.eta_min) * (1 + math.cos(math.pi * self.last_epoch / (self.iter_max - self.warmup_iters)))
+                for base_lr in self.base_lrs
+            ]
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
