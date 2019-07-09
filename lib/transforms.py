@@ -6,6 +6,16 @@ import numbers
 import math
 import torch
 
+class ClipBorder(object):
+    def __init__(self):
+        pass
+
+    def compute_borders(self, img_group):
+        pass
+
+    def __call__(self, img_group):
+        x1,y1,x2,y2 = compute_borders(img_group)
+
 class GroupRandomCrop(object):
     def __init__(self, size):
         if isinstance(size, numbers.Number):

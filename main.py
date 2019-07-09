@@ -179,13 +179,13 @@ def main():
     else:
         raise ValueError("Start epoch must be larger than or equal to zero")
 
-    # scheduler = WarmupMultiStepLR(optimizer, iter_steps, gamma=0.1, warmup_factor=1.0/3, warmup_iters=2500, last_epoch=args.start_epoch*len(train_loader))
-    scheduler = WarmupCosineLR(optimizer, 
-                            iter_max=args.epochs*len(train_loader), 
-                            eta_min=0.00002, 
-                            warmup_factor=1.0/3, 
-                            warmup_iters=2500, 
-                            last_epoch=last_epoch)
+    scheduler = WarmupMultiStepLR(optimizer, iter_steps, gamma=0.1, warmup_factor=1.0/3, warmup_iters=2500, last_epoch=last_epoch)
+    # scheduler = WarmupCosineLR(optimizer, 
+    #                         iter_max=args.epochs*len(train_loader), 
+    #                         eta_min=0.00002, 
+    #                         warmup_factor=1.0/3, 
+    #                         warmup_iters=2500, 
+    #                         last_epoch=last_epoch)
 
     if args.mode != "3D":
         cudnn.benchmark = True
