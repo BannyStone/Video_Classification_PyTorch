@@ -1,6 +1,6 @@
 # Video-Classification-Pytorch
 
-***Still in development***.
+***This is an archived repo. Stronly recommend PySlowFast or mmaction for video understanding***.
 
 This is a repository containing 3D models and 2D models for video classification. The code is based on PyTorch 1.0.
 Until now, it supports the following datasets:
