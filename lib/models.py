@@ -48,7 +48,7 @@ class VideoModule(nn.Module):
             self.base_model = eval(base_model_name)(pretrained=self.pretrained,
                                     feat=True, pretrained_model=base_model_dict)
         else:
-            raise ValueError('Unknown base model: {}'.format(base_model))
+            raise ValueError('Unknown base model: {}'.format(base_model_name))
 
         # classifier: (dropout) + fc
         if self.dropout == 0:
